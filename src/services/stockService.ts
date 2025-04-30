@@ -100,5 +100,7 @@ export const convertToWatchlistItems = (quotes: StockQuote[]): WatchlistItem[] =
 export const defaultWatchlists = {
   dinosaurThemed: ['DINO', 'CEMI', 'GEVO', 'NE', 'RIG'],
   technology: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META'],
-  energy: ['XOM', 'CVX', 'BP', 'SHEL', 'TTE']
+  energy: ['XOM', 'CVX', 'BP', 'SHEL', 'TTE'],
+  // Adding market overview with Bitcoin, Gold, and 10-year Treasury
+  marketOverview: ['BTC-USD', 'GC=F', '^TNX'],
 };

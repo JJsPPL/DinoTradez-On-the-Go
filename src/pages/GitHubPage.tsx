@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import MobileNav from '@/components/MobileNav';
 
 const GitHubPage = () => {
@@ -15,11 +14,6 @@ const GitHubPage = () => {
             <Link to="/" className="font-bold text-xl text-primary">
               DINO TRADEZ
             </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/app">Go to Trading App</Link>
-            </Button>
           </div>
         </div>
       </header>

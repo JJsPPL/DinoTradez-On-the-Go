@@ -10,9 +10,16 @@ interface WatchlistTableProps {
 }
 
 const WatchlistTable: React.FC<WatchlistTableProps> = ({ title, items, isLoading }) => {
+  // Simple function to display the title properly
+  const displayTitle = () => {
+    if (title === "Bullish Watchlist") return "Bullish";
+    if (title === "Bearish Watchlist") return "Bearish";
+    return title;
+  };
+
   return (
     <div className="rounded-md border">
-      <div className="bg-muted/50 p-2 font-medium">{title}</div>
+      <div className="bg-muted/50 p-2 font-medium">{displayTitle()}</div>
       <Table>
         <TableHeader>
           <TableRow>
