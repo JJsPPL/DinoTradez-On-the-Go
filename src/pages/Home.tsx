@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
@@ -84,7 +83,7 @@ const Home = () => {
                   </Button>
                   <Button size="lg" variant="outline" asChild>
                     <a 
-                      href="https://jjsppl.github.io/dinotradez/"
+                      href="https://jjsppl.github.io/DinoTradez-On-the-Go/"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -173,7 +172,7 @@ const Home = () => {
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>
                     <a 
-                      href="https://jjsppl.github.io/dinotradez/" 
+                      href="https://jjsppl.github.io/DinoTradez-On-the-Go/" 
                       className="hover:text-foreground"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -183,7 +182,7 @@ const Home = () => {
                   </li>
                   <li>
                     <a 
-                      href="https://github.com/JJsPPL/dinotradez" 
+                      href="https://github.com/JJsPPL/DinoTradez-On-the-Go" 
                       className="hover:text-foreground"
                       target="_blank"
                       rel="noopener noreferrer"

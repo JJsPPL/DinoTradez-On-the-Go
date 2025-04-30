@@ -140,7 +140,7 @@ const About = () => {
                   <div className="flex gap-4">
                     <Button variant="secondary" asChild>
                       <a 
-                        href="https://github.com/JJsPPL/dinotradez" 
+                        href="https://github.com/JJsPPL/DinoTradez-On-the-Go" 
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -149,7 +149,7 @@ const About = () => {
                     </Button>
                     <Button variant="secondary" asChild>
                       <a 
-                        href="https://jjsppl.github.io/dinotradez/" 
+                        href="https://jjsppl.github.io/DinoTradez-On-the-Go/" 
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -241,7 +241,7 @@ const About = () => {
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>
                     <a 
-                      href="https://jjsppl.github.io/dinotradez/" 
+                      href="https://jjsppl.github.io/DinoTradez-On-the-Go/" 
                       className="hover:text-foreground"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -251,7 +251,7 @@ const About = () => {
                   </li>
                   <li>
                     <a 
-                      href="https://github.com/JJsPPL/dinotradez" 
+                      href="https://github.com/JJsPPL/DinoTradez-On-the-Go" 
                       className="hover:text-foreground"
                       target="_blank"
                       rel="noopener noreferrer"

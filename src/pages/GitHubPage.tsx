@@ -21,7 +21,7 @@ const GitHubPage = () => {
       {/* Main Content - Iframe showing the GitHub Pages site */}
       <main className="flex-1 w-full">
         <iframe 
-          src="https://jjsppl.github.io/dinotradez/" 
+          src="https://jjsppl.github.io/DinoTradez-On-the-Go/" 
           title="Dino Tradez GitHub Page"
           className="w-full h-screen border-0"
           style={{ height: 'calc(100vh - 64px)' }}
