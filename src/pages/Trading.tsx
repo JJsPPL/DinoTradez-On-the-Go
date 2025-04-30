@@ -1,12 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MobileNav from '@/components/MobileNav';
+import Watchlists from '@/components/Watchlists';
+import APIKeyConfig from '@/components/APIKeyConfig';
+import { getRapidAPIKey } from '@/services/stockService';
 
 const Trading = () => {
+  const [hasApiKey, setHasApiKey] = useState<boolean>(!!getRapidAPIKey());
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -33,19 +38,31 @@ const Trading = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle>Market Trends</CardTitle>
-                  <CardDescription>
-                    Monitor the latest dino asset prices and market movements
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 bg-muted/50 rounded-md flex items-center justify-center">
-                    <p className="text-muted-foreground">Chart visualization would go here</p>
-                  </div>
-                </CardContent>
-              </Card>
+              {hasApiKey ? (
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle>Market Trends</CardTitle>
+                    <CardDescription>
+                      Monitor the latest stock prices and market movements
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Watchlists />
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle>API Configuration Required</CardTitle>
+                    <CardDescription>
+                      Please configure your RapidAPI key to view live market data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <APIKeyConfig onConfigured={() => setHasApiKey(true)} />
+                  </CardContent>
+                </Card>
+              )}
               
               <Tabs defaultValue="buy" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
