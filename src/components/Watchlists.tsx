@@ -12,7 +12,8 @@ const Watchlists = () => {
   const [watchlists, setWatchlists] = useState<Record<string, WatchlistItem[]>>({
     dinosaurThemed: [],
     technology: [],
-    energy: []
+    energy: [],
+    marketOverview: []
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -29,6 +30,18 @@ const Watchlists = () => {
           [activeTab]: convertToWatchlistItems(quotes)
         }));
         setLastUpdated(new Date());
+      }
+      
+      // Also load market overview data if not the active tab
+      if (activeTab !== 'marketOverview') {
+        const marketOverviewSymbols = defaultWatchlists.marketOverview;
+        const marketOverviewQuotes = await fetchStockQuotes(marketOverviewSymbols);
+        if (marketOverviewQuotes.length > 0) {
+          setWatchlists(prev => ({
+            ...prev,
+            marketOverview: convertToWatchlistItems(marketOverviewQuotes)
+          }));
+        }
       }
     } catch (error) {
       console.error('Error loading watchlist:', error);
@@ -73,6 +86,13 @@ const Watchlists = () => {
           </Button>
         </div>
       </div>
+      
+      {/* Market Overview watchlist - always visible */}
+      <WatchlistTable 
+        title="Market Overview" 
+        items={watchlists.marketOverview}
+        isLoading={isLoading} 
+      />
       
       <Tabs defaultValue="dinosaurThemed" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-3">
