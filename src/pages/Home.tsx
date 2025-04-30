@@ -47,7 +47,7 @@ const Home = () => {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MobileNav />
-            <Link to="/" className="font-bold text-xl text-primary">
+            <Link to="/app" className="font-bold text-xl text-primary">
               DINO TRADEZ
             </Link>
           </div>
@@ -61,6 +61,11 @@ const Home = () => {
 
       {/* Main Content */}
       <main className="flex-1">
+        {/* Additional notice */}
+        <div className="bg-accent text-accent-foreground p-2 text-center">
+          <p>You're viewing the app version. <Link to="/" className="underline font-bold">Click here</Link> to see the GitHub Pages version.</p>
+        </div>
+
         {/* Hero Section */}
         <section className="py-10 md:py-16">
           <div className="container px-4 mx-auto">

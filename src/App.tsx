@@ -10,6 +10,7 @@ import Portfolio from "./pages/Portfolio";
 import Marketplace from "./pages/Marketplace";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import GitHubPage from "./pages/GitHubPage";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<GitHubPage />} />
+          <Route path="/app" element={<Home />} />
           <Route path="/trading" element={<Trading />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/marketplace" element={<Marketplace />} />

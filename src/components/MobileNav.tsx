@@ -10,7 +10,8 @@ type NavLink = {
 };
 
 const navLinks: NavLink[] = [
-  { title: 'Home', href: '/' },
+  { title: 'GitHub Version', href: '/' },
+  { title: 'App Home', href: '/app' },
   { title: 'Trading', href: '/trading' },
   { title: 'Portfolio', href: '/portfolio' },
   { title: 'Marketplace', href: '/marketplace' },
@@ -80,7 +81,7 @@ const MobileNav = () => {
               target="_blank" 
               rel="noopener noreferrer"
             >
-              GitHub Page
+              GitHub Page (External)
             </a>
           </div>
         </div>
