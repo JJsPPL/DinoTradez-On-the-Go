@@ -40,10 +40,10 @@ const GitHubPage = () => {
         <div className="max-w-md mx-auto text-center space-y-6">
           <h1 className="text-3xl font-bold">Dino Tradez GitHub Page</h1>
           <p className="text-muted-foreground">
-            The GitHub Page has been opened in a new tab. If it didn't open automatically, you can use the buttons below.
+            The GitHub Page has been opened in a new tab. If it didn't open automatically, you can use the button below.
           </p>
           
-          <div className="flex flex-col space-y-2">
+          <div className="flex justify-center">
             <Button asChild variant="default">
               <a 
                 href={githubPagesUrl}
@@ -52,11 +52,6 @@ const GitHubPage = () => {
               >
                 Open GitHub Page
               </a>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/app">
-                Go to App Home
-              </Link>
             </Button>
           </div>
         </div>
