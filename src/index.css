@@ -46,13 +46,13 @@
   }
 
   .dark {
-    --background: 140 10% 10%;
+    --background: 220 10% 10%;
     --foreground: 140 10% 98%;
 
-    --card: 140 10% 15%;
+    --card: 220 10% 15%;
     --card-foreground: 140 10% 98%;
 
-    --popover: 140 10% 15%;
+    --popover: 220 10% 15%;
     --popover-foreground: 140 10% 98%;
 
     --primary: 142 76% 36%;
@@ -61,7 +61,7 @@
     --secondary: 36 100% 50%;
     --secondary-foreground: 36 100% 10%;
 
-    --muted: 140 10% 20%;
+    --muted: 220 10% 20%;
     --muted-foreground: 140 10% 70%;
 
     --accent: 36 100% 50%;
@@ -70,17 +70,17 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 140 10% 20%;
-    --input: 140 10% 20%;
+    --border: 220 10% 20%;
+    --input: 220 10% 20%;
     --ring: 142 76% 36%;
 
-    --sidebar-background: 140 10% 15%;
+    --sidebar-background: 220 10% 15%;
     --sidebar-foreground: 140 10% 98%;
     --sidebar-primary: 142 76% 36%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 36 100% 50%;
     --sidebar-accent-foreground: 36 100% 10%;
-    --sidebar-border: 140 10% 20%;
+    --sidebar-border: 220 10% 20%;
     --sidebar-ring: 142 76% 36%;
   }
 }
@@ -104,4 +104,57 @@
   .trex-gradient {
     @apply bg-gradient-to-r from-trex to-trex-dark;
   }
+  
+  .glass-card {
+    @apply bg-card/70 backdrop-blur-md border border-white/10 rounded-lg shadow-lg;
+  }
+  
+  .animated-gradient {
+    background-size: 200% 200%;
+    animation: gradientShift 5s ease infinite;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+  }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Enhance scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(76, 175, 80, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(76, 175, 80, 0.7);
+}
+
+/* Add these custom animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }

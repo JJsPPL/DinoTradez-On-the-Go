@@ -67,6 +67,12 @@
     --z-tooltip: 10;
     --z-fixed: 100;
     --z-modal: 1000;
+
+    /* Glassmorphism */
+    --glass-bg: rgba(42, 46, 56, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --glass-blur: 10px;
 }
 
 /* Light Theme Variables */
@@ -79,6 +85,8 @@
     --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.15);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.1);
 }
 
 /* Modern CSS Reset */
@@ -135,7 +143,7 @@ body {
                 color var(--transition-medium);
 }
 
-/* Typography */
+/* Typography with enhanced styling */
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--heading-font);
     font-weight: 700;
@@ -144,8 +152,30 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
 }
 
-h1 { font-size: var(--h1-size); }
-h2 { font-size: var(--h2-size); }
+h1 { 
+    font-size: var(--h1-size);
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+h2 { 
+    font-size: var(--h2-size);
+    position: relative;
+}
+
+h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    height: 3px;
+    width: 60px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    border-radius: 3px;
+}
+
 h3 { font-size: var(--h3-size); }
 h4 { font-size: var(--h4-size); }
 
@@ -314,33 +344,37 @@ a:focus-visible {
     }
 }
 
-/* Market Cards */
+/* Market Cards with Glassmorphism */
 .market-card {
-    background-color: var(--bg-secondary);
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-lg);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--glass-shadow);
     transition: transform var(--transition-fast),
                 box-shadow var(--transition-fast);
 }
 
 .market-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
 }
 
-/* Data Tables */
+/* Data Tables with Enhanced Styling */
 .table-wrapper {
     overflow-x: auto;
     margin: var(--spacing-lg) 0;
     border-radius: var(--border-radius-md);
     box-shadow: var(--shadow-sm);
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
 }
 
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    background-color: var(--bg-secondary);
+    background-color: transparent;
 }
 
 .data-table th,
@@ -351,65 +385,124 @@ a:focus-visible {
 }
 
 .data-table th {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.2);
     font-weight: 600;
     text-transform: uppercase;
     font-size: var(--text-sm);
     letter-spacing: 0.5px;
 }
 
+.data-table tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
 .data-table tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Utils */
-.highlight { color: var(--highlight-color); }
-.positive { color: var(--success-color); }
-.negative { color: var(--danger-color); }
-.warning { color: var(--warning-color); }
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-    :root {
-        --container-padding: var(--spacing-md);
-    }
+/* Utils with enhanced color effects */
+.highlight { 
+    color: var(--highlight-color);
+    text-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
 }
 
-@media (max-width: 992px) {
-    :root {
-        --h1-size: 2rem;
-        --h2-size: 1.75rem;
-        --h3-size: 1.5rem;
-        --h4-size: 1.25rem;
-    }
+.positive { 
+    color: var(--success-color);
+    text-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
 }
 
-@media (max-width: 768px) {
-    :root {
-        --base-font-size: 14px;
-    }
-
-    .market-indices {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-md);
-    }
+.negative { 
+    color: var(--danger-color);
+    text-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
 }
 
-@media (max-width: 576px) {
-    .container {
-        padding: 0 var(--spacing-sm);
-    }
-
-    .navbar-brand h1 {
-        font-size: 1.25rem;
-    }
+.warning { 
+    color: var(--warning-color);
+    text-shadow: 0 0 8px rgba(243, 156, 18, 0.4);
 }
 
-/* Dark mode preference */
-@media (prefers-color-scheme: dark) {
-    :root {
-        color-scheme: dark;
-    }
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.float {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Hero section styling */
+.hero-section {
+    padding: var(--spacing-xxl) var(--spacing-lg);
+    background: linear-gradient(135deg, rgba(29, 169, 119, 0.1), rgba(38, 216, 153, 0.05));
+    border-radius: var(--border-radius-lg);
+    margin-bottom: var(--spacing-xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(38, 216, 153, 0.2), transparent 70%);
+    pointer-events: none;
+}
+
+.hero-title {
+    font-size: calc(var(--h1-size) * 1.2);
+    margin-bottom: var(--spacing-lg);
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Card Effects */
+.feature-card {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast),
+                box-shadow var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.feature-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(38, 216, 153, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform var(--transition-medium);
+    z-index: -1;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.feature-card:hover::after {
+    transform: translateX(0);
 }
 
 /* Footer and Disclaimer Styles */
@@ -417,26 +510,44 @@ a:focus-visible {
     background-color: var(--bg-secondary);
     padding: var(--spacing-xl) 0;
     margin-top: var(--spacing-xxl);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at bottom left, rgba(38, 216, 153, 0.1), transparent 70%);
+    pointer-events: none;
 }
 
 .footer-content {
     max-width: var(--container-max-width);
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 
 .disclaimer-section {
     margin-bottom: var(--spacing-xl);
     padding: var(--spacing-lg);
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
     border-radius: var(--border-radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-md);
 }
 
 .important-notice,
 .notice-note,
 .legal-disclaimer {
     margin-bottom: var(--spacing-lg);
+    animation: fadeIn 0.6s ease-out forwards;
 }
 
 .important-notice:last-child,
@@ -452,6 +563,7 @@ a:focus-visible {
     font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-shadow: 0 0 8px rgba(243, 156, 18, 0.3);
 }
 
 .disclaimer-section p {
@@ -464,7 +576,7 @@ a:focus-visible {
 .footer-bottom {
     text-align: center;
     padding-top: var(--spacing-lg);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .footer-bottom p {
@@ -483,5 +595,12 @@ a:focus-visible {
 
     .disclaimer-section p {
         font-size: var(--text-xs);
+    }
+}
+
+/* Dark mode preference */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
     }
 }
