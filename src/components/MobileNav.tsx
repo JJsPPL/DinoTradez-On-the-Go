@@ -76,6 +76,14 @@ const MobileNav = () => {
           </nav>
           <div className="mt-auto pt-4 border-t">
             <a 
+              href="https://github.com/JJSPPL/DinoTradez-On-the-Go" 
+              className="flex items-center py-2 px-3 text-foreground hover:text-primary rounded-md transition-colors"
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              GitHub Repository
+            </a>
+            <a 
               href="https://jjsppl.github.io/DinoTradez-On-the-Go/" 
               className="flex items-center py-2 px-3 text-foreground hover:text-primary rounded-md transition-colors"
               target="_blank" 

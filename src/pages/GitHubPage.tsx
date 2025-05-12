@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 const GitHubPage = () => {
   const { toast } = useToast();
   const githubPagesUrl = "https://jjsppl.github.io/DinoTradez-On-the-Go/";
+  const githubRepoUrl = "https://github.com/JJSPPL/DinoTradez-On-the-Go";
 
   useEffect(() => {
     // Notify user about redirection
@@ -40,10 +41,10 @@ const GitHubPage = () => {
         <div className="max-w-md mx-auto text-center space-y-6 glass-card p-8 mt-10 animate-float">
           <h1 className="text-3xl font-bold text-gradient dino-gradient bg-clip-text text-transparent">Dino Tradez GitHub Page</h1>
           <p className="text-muted-foreground">
-            The GitHub Page has been opened in a new tab. If it didn't open automatically, you can use the button below.
+            The GitHub Page has been opened in a new tab. If it didn't open automatically, you can use the buttons below.
           </p>
           
-          <div className="flex justify-center pt-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
             <Button asChild variant="default" className="dino-gradient hover-scale">
               <a 
                 href={githubPagesUrl}
@@ -51,6 +52,16 @@ const GitHubPage = () => {
                 rel="noopener noreferrer"
               >
                 Open GitHub Page
+              </a>
+            </Button>
+            
+            <Button asChild variant="outline" className="hover-scale">
+              <a 
+                href={githubRepoUrl}
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                View Repository
               </a>
             </Button>
           </div>
