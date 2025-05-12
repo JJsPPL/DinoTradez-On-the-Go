@@ -98,3 +98,12 @@
   margin-bottom: 2rem;
   text-align: center;
 }
+
+/* New Styles for Market Intelligence Section */
+.glass-card {
+  background: rgba(25, 28, 36, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
