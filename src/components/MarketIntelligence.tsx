@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { ExternalLink, TrendingUp, TrendingDown } from 'lucide-react';
 import { CheckedState } from '@radix-ui/react-checkbox';
 
@@ -26,6 +27,43 @@ interface MarketIndexData {
   change: number;
   changePercent: number;
   isNegative: boolean;
+}
+
+interface DarkPoolData {
+  symbol: string;
+  dpPercentage: number;
+  dpVolume: string;
+  blockTrades: number;
+}
+
+interface LottoStockData {
+  symbol: string;
+  last: number;
+  netChng: number;
+  percentChange: number;
+  shares: string;
+  auth: string;
+  marketCap: string;
+  mcCe: number;
+  volume: string;
+  avgVol: string;
+  relVol: number;
+  dpPercentage: number;
+}
+
+interface WatchlistStockData {
+  symbol: string;
+  last: number;
+  netChng: number;
+  percentChange: number;
+  shares: string;
+  auth: string;
+  marketCap: string;
+  mcCe: number;
+  volume: string;
+  avgVol: string;
+  relVol: number;
+  dpPercentage: number;
 }
 
 const MarketIntelligence = () => {
@@ -54,6 +92,153 @@ const MarketIntelligence = () => {
     { name: 'Bitcoin', value: '63,755.82', change: 1258.42, changePercent: 2.01, isNegative: false },
     { name: 'Gold', value: '2,345.90', change: 12.75, changePercent: 0.55, isNegative: false },
     { name: '10-Year Treasury', value: '4.52%', change: 0.02, changePercent: 0.44, isNegative: false },
+  ];
+
+  // Mock data for Dark Pool Activity
+  const darkPoolData: DarkPoolData[] = [
+    { symbol: 'TSLA', dpPercentage: 48.7, dpVolume: '57.73M', blockTrades: 127 },
+    { symbol: 'AAPL', dpPercentage: 42.8, dpVolume: '23.94M', blockTrades: 87 },
+    { symbol: 'AMZN', dpPercentage: 45.1, dpVolume: '21.57M', blockTrades: 93 },
+    { symbol: 'NVDA', dpPercentage: 46.2, dpVolume: '20.11M', blockTrades: 76 },
+    { symbol: 'GME', dpPercentage: 55.2, dpVolume: '3.94M', blockTrades: 29 },
+  ];
+
+  // Mock data for Lotto Stock Picks
+  const lottoStockData: LottoStockData[] = [
+    { 
+      symbol: 'BBBY', 
+      last: 0.48, 
+      netChng: -5.36, 
+      percentChange: -91.79, 
+      shares: '119.0M', 
+      auth: '900.0M', 
+      marketCap: '57.12M', 
+      mcCe: 0.28,
+      volume: '10.52M',
+      avgVol: '8.74M',
+      relVol: 1.20,
+      dpPercentage: 59.4
+    },
+    { 
+      symbol: 'SNDL', 
+      last: 0.63, 
+      netChng: -11.37, 
+      percentChange: -94.78, 
+      shares: '261.7M', 
+      auth: '2.0B', 
+      marketCap: '164.9M', 
+      mcCe: 0.54,
+      volume: '9.8M',
+      avgVol: '7.2M',
+      relVol: 1.36,
+      dpPercentage: 47.2
+    },
+    { 
+      symbol: 'CVNA', 
+      last: 9.46, 
+      netChng: -104.52, 
+      percentChange: -91.70, 
+      shares: '105.4M', 
+      auth: '500.0M', 
+      marketCap: '997.9M', 
+      mcCe: 0.87,
+      volume: '6.2M',
+      avgVol: '5.9M',
+      relVol: 1.05,
+      dpPercentage: 52.1
+    }
+  ];
+
+  // Mock data for Bullish Watchlist
+  const bullishWatchlistData: WatchlistStockData[] = [
+    { 
+      symbol: 'AAPL', 
+      last: 176.04, 
+      netChng: 3.39, 
+      percentChange: 1.93, 
+      shares: '15.7B', 
+      auth: '50.0B', 
+      marketCap: '2.74T', 
+      mcCe: 28.65,
+      volume: '55.92M',
+      avgVol: '61.54M',
+      relVol: 0.91,
+      dpPercentage: 42.8
+    },
+    { 
+      symbol: 'MSFT', 
+      last: 314.62, 
+      netChng: 6.40, 
+      percentChange: 2.05, 
+      shares: '7.43B', 
+      auth: '24.0B', 
+      marketCap: '2.31T', 
+      mcCe: 12.43,
+      volume: '23.79M',
+      avgVol: '26.18M',
+      relVol: 0.91,
+      dpPercentage: 38.5
+    },
+    { 
+      symbol: 'NVDA', 
+      last: 681.83, 
+      netChng: 11.33, 
+      percentChange: 1.66, 
+      shares: '2.47B', 
+      auth: '4.0B', 
+      marketCap: '1.68T', 
+      mcCe: 51.24,
+      volume: '43.52M',
+      avgVol: '47.89M',
+      relVol: 0.91,
+      dpPercentage: 46.2
+    }
+  ];
+
+  // Mock data for Bearish Watchlist
+  const bearishWatchlistData: WatchlistStockData[] = [
+    { 
+      symbol: 'INTC', 
+      last: 35.57, 
+      netChng: 1.65, 
+      percentChange: 4.37, 
+      shares: '4.21B', 
+      auth: '10.0B', 
+      marketCap: '150.17B', 
+      mcCe: 3.24,
+      volume: '52.63M',
+      avgVol: '43.82M',
+      relVol: 1.20,
+      dpPercentage: 44.3
+    },
+    { 
+      symbol: 'RIVN', 
+      last: 10.23, 
+      netChng: 0.79, 
+      percentChange: 7.14, 
+      shares: '948.3M', 
+      auth: '4.5B', 
+      marketCap: '9.74B', 
+      mcCe: 1.36,
+      volume: '35.28M',
+      avgVol: '32.56M',
+      relVol: 1.08,
+      dpPercentage: 52.6
+    },
+    { 
+      symbol: 'HOOD', 
+      last: 16.76, 
+      netChng: 1.18, 
+      percentChange: 6.52, 
+      shares: '729.5M', 
+      auth: '2.5B', 
+      marketCap: '12.27B', 
+      mcCe: 2.14,
+      volume: '18.24M',
+      avgVol: '12.38M',
+      relVol: 1.47,
+      dpPercentage: 47.8
+    }
   ];
 
   const [showLottoPicks, setShowLottoPicks] = useState(true);
@@ -98,6 +283,92 @@ const MarketIntelligence = () => {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+      
+      {/* Dark Pool Activity Section */}
+      <div className="glass-card rounded-lg overflow-hidden">
+        <div className="text-center p-4 bg-black/30">
+          <h2 className="text-2xl font-bold">Dark Pool Activity</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Latest Dark Pool Data
+          </p>
+        </div>
+        
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Symbol</TableHead>
+              <TableHead className="text-right">DP %</TableHead>
+              <TableHead className="text-right">DP Volume</TableHead>
+              <TableHead className="text-right">Block Trades</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {darkPoolData.map(item => (
+              <TableRow key={item.symbol}>
+                <TableCell className="font-medium text-green-500">{item.symbol}</TableCell>
+                <TableCell className="text-right">{item.dpPercentage}%</TableCell>
+                <TableCell className="text-right">{item.dpVolume}</TableCell>
+                <TableCell className="text-right">{item.blockTrades}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        
+        <div className="p-3 text-center">
+          <Button variant="ghost" className="text-teal-400 hover:text-teal-300">
+            View All Dark Pool Data →
+          </Button>
+        </div>
+      </div>
+      
+      {/* Lotto Stock Picks Section */}
+      <div className="bg-teal-900/30 rounded-lg overflow-hidden">
+        <div className="text-center p-4 bg-teal-900/50">
+          <h2 className="text-2xl font-bold">Lotto Stock Picks</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Stocks with >1M volume and -90% to -99% change
+          </p>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Symbol</TableHead>
+                <TableHead className="text-right">Last</TableHead>
+                <TableHead className="text-right">Net Chng</TableHead>
+                <TableHead className="text-right">%Change</TableHead>
+                <TableHead className="text-right">Shares</TableHead>
+                <TableHead className="text-right">Auth</TableHead>
+                <TableHead className="text-right">Market Cap</TableHead>
+                <TableHead className="text-right">MC/CE</TableHead>
+                <TableHead className="text-right">Volume</TableHead>
+                <TableHead className="text-right">Avg Vol</TableHead>
+                <TableHead className="text-right">Rel Vol</TableHead>
+                <TableHead className="text-right">DP %</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {lottoStockData.map(item => (
+                <TableRow key={item.symbol}>
+                  <TableCell className="font-medium text-green-500">{item.symbol}</TableCell>
+                  <TableCell className="text-right">{item.last.toFixed(2)}</TableCell>
+                  <TableCell className="text-right text-red-500">{item.netChng.toFixed(2)}</TableCell>
+                  <TableCell className="text-right text-red-500">{item.percentChange.toFixed(2)}%</TableCell>
+                  <TableCell className="text-right">{item.shares}</TableCell>
+                  <TableCell className="text-right">{item.auth}</TableCell>
+                  <TableCell className="text-right">{item.marketCap}</TableCell>
+                  <TableCell className="text-right">{item.mcCe.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{item.volume}</TableCell>
+                  <TableCell className="text-right">{item.avgVol}</TableCell>
+                  <TableCell className="text-right">{item.relVol.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{item.dpPercentage.toFixed(1)}%</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
       
@@ -198,6 +469,104 @@ const MarketIntelligence = () => {
               View All Short Interest Data →
             </Button>
           </div>
+        </div>
+      </div>
+      
+      {/* Bullish Watchlist Section */}
+      <div className="glass-card rounded-lg overflow-hidden">
+        <div className="text-center p-4 bg-black/30">
+          <h2 className="text-2xl font-bold">Bullish Watchlist</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Stocks with high volume and positive momentum
+          </p>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Symbol</TableHead>
+                <TableHead className="text-right">Last</TableHead>
+                <TableHead className="text-right">Net Chng</TableHead>
+                <TableHead className="text-right">%Change</TableHead>
+                <TableHead className="text-right">Shares</TableHead>
+                <TableHead className="text-right">Auth</TableHead>
+                <TableHead className="text-right">Market Cap</TableHead>
+                <TableHead className="text-right">MC/CE</TableHead>
+                <TableHead className="text-right">Volume</TableHead>
+                <TableHead className="text-right">Avg Vol</TableHead>
+                <TableHead className="text-right">Rel Vol</TableHead>
+                <TableHead className="text-right">DP %</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {bullishWatchlistData.map(item => (
+                <TableRow key={item.symbol}>
+                  <TableCell className="font-medium text-green-500">{item.symbol}</TableCell>
+                  <TableCell className="text-right">{item.last.toFixed(2)}</TableCell>
+                  <TableCell className="text-right text-green-500">+{item.netChng.toFixed(2)}</TableCell>
+                  <TableCell className="text-right text-green-500">+{item.percentChange.toFixed(2)}%</TableCell>
+                  <TableCell className="text-right">{item.shares}</TableCell>
+                  <TableCell className="text-right">{item.auth}</TableCell>
+                  <TableCell className="text-right">{item.marketCap}</TableCell>
+                  <TableCell className="text-right">{item.mcCe.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{item.volume}</TableCell>
+                  <TableCell className="text-right">{item.avgVol}</TableCell>
+                  <TableCell className="text-right">{item.relVol.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{item.dpPercentage.toFixed(1)}%</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+      
+      {/* Bearish Watchlist Section */}
+      <div className="glass-card rounded-lg overflow-hidden">
+        <div className="text-center p-4 bg-black/30">
+          <h2 className="text-2xl font-bold">Bearish Watchlist</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Stocks with high volume and negative momentum
+          </p>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Symbol</TableHead>
+                <TableHead className="text-right">Last</TableHead>
+                <TableHead className="text-right">Net Chng</TableHead>
+                <TableHead className="text-right">%Change</TableHead>
+                <TableHead className="text-right">Shares</TableHead>
+                <TableHead className="text-right">Auth</TableHead>
+                <TableHead className="text-right">Market Cap</TableHead>
+                <TableHead className="text-right">MC/CE</TableHead>
+                <TableHead className="text-right">Volume</TableHead>
+                <TableHead className="text-right">Avg Vol</TableHead>
+                <TableHead className="text-right">Rel Vol</TableHead>
+                <TableHead className="text-right">DP %</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {bearishWatchlistData.map(item => (
+                <TableRow key={item.symbol}>
+                  <TableCell className="font-medium text-green-500">{item.symbol}</TableCell>
+                  <TableCell className="text-right">{item.last.toFixed(2)}</TableCell>
+                  <TableCell className="text-right text-green-500">+{item.netChng.toFixed(2)}</TableCell>
+                  <TableCell className="text-right text-green-500">+{item.percentChange.toFixed(2)}%</TableCell>
+                  <TableCell className="text-right">{item.shares}</TableCell>
+                  <TableCell className="text-right">{item.auth}</TableCell>
+                  <TableCell className="text-right">{item.marketCap}</TableCell>
+                  <TableCell className="text-right">{item.mcCe.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{item.volume}</TableCell>
+                  <TableCell className="text-right">{item.avgVol}</TableCell>
+                  <TableCell className="text-right">{item.relVol.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">{item.dpPercentage.toFixed(1)}%</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>

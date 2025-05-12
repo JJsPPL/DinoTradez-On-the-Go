@@ -34,18 +34,6 @@ const Watchlists = () => {
         }));
         setLastUpdated(new Date());
       }
-      
-      // Also load market overview data if not the active tab
-      if (activeTab !== 'marketOverview') {
-        const marketOverviewSymbols = defaultWatchlists.marketOverview;
-        const marketOverviewQuotes = await fetchStockQuotes(marketOverviewSymbols);
-        if (marketOverviewQuotes.length > 0) {
-          setWatchlists(prev => ({
-            ...prev,
-            marketOverview: convertToWatchlistItems(marketOverviewQuotes)
-          }));
-        }
-      }
     } catch (error) {
       console.error('Error loading watchlist:', error);
     } finally {
@@ -90,12 +78,7 @@ const Watchlists = () => {
         </div>
       </div>
       
-      {/* Market Overview watchlist - always visible */}
-      <WatchlistTable 
-        title="Market Overview" 
-        items={watchlists.marketOverview}
-        isLoading={isLoading} 
-      />
+      {/* Removed the Market Overview watchlist as requested */}
       
       <Tabs defaultValue="dinosaurThemed" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-6">
