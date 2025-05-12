@@ -10,7 +10,7 @@ type NavLink = {
 };
 
 const navLinks: NavLink[] = [
-  { title: 'GitHub Version', href: '/' },
+  { title: 'GitHub Version', href: '/github' },
   { title: 'App Home', href: '/app' },
   { title: 'Trading', href: '/trading' },
   { title: 'Portfolio', href: '/portfolio' },
