@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, TrendingUp, TrendingDown } from 'lucide-react';
 import { CheckedState } from '@radix-ui/react-checkbox';
 
 interface S3Filing {
@@ -18,6 +18,14 @@ interface ShortInterestData {
   shortPercentage: number;
   change: number;
   volume: string;
+}
+
+interface MarketIndexData {
+  name: string;
+  value: string;
+  change: number;
+  changePercent: number;
+  isNegative: boolean;
 }
 
 const MarketIntelligence = () => {
@@ -37,6 +45,17 @@ const MarketIntelligence = () => {
     { symbol: 'SNDL', shortPercentage: 16.73, change: -94.78, volume: '9.8M' },
   ];
 
+  // Market overview data including new assets
+  const marketIndices: MarketIndexData[] = [
+    { name: 'S&P 500', value: '4,993.48', change: 23.92, changePercent: 0.48, isNegative: false },
+    { name: 'Nasdaq', value: '15,929.20', change: 31.66, changePercent: 0.20, isNegative: false },
+    { name: 'Dow Jones', value: '39,220.58', change: 191.34, changePercent: 0.49, isNegative: false },
+    { name: 'Russell 2000', value: '2,026.14', change: -7.38, changePercent: -0.36, isNegative: true },
+    { name: 'Bitcoin', value: '63,755.82', change: 1258.42, changePercent: 2.01, isNegative: false },
+    { name: 'Gold', value: '2,345.90', change: 12.75, changePercent: 0.55, isNegative: false },
+    { name: '10-Year Treasury', value: '4.52%', change: 0.02, changePercent: 0.44, isNegative: false },
+  ];
+
   const [showLottoPicks, setShowLottoPicks] = useState(true);
   const [showVolume, setShowVolume] = useState(true);
 
@@ -49,7 +68,40 @@ const MarketIntelligence = () => {
   };
 
   return (
-    <div className="space-y-6 py-6">
+    <div className="space-y-10 py-8">
+      {/* Market Overview Section */}
+      <div>
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-bold text-gradient dino-gradient bg-clip-text text-transparent">
+            Market Overview
+          </h2>
+          <p className="text-muted-foreground">
+            Track major indices and trending stocks
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          {marketIndices.map((index, i) => (
+            <div 
+              key={index.name} 
+              className="glass-card p-4 rounded-lg transition-all hover:translate-y-[-3px] hover:shadow-lg"
+            >
+              <div className="flex flex-col space-y-2">
+                <div className="text-lg font-medium text-muted-foreground">{index.name}</div>
+                <div className="text-2xl font-bold">{index.value}</div>
+                <div className={`flex items-center ${index.isNegative ? 'text-red-500' : 'text-green-500'}`}>
+                  <span className="mr-1">
+                    {index.isNegative ? '-' : '+'}{Math.abs(index.change).toFixed(2)} ({Math.abs(index.changePercent).toFixed(2)}%)
+                  </span>
+                  {index.isNegative ? <TrendingDown size={16} /> : <TrendingUp size={16} />}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Market Intelligence Section */}
       <div className="text-center">
         <h2 className="text-3xl font-bold text-gradient dino-gradient bg-clip-text text-transparent">
           Market Intelligence
