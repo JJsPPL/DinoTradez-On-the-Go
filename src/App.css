@@ -49,11 +49,12 @@
   border-radius: 12px;
   transition: all 0.3s ease;
   margin: 0.5rem 0;
+  background-color: rgba(30, 32, 38, 0.7);
 }
 
 .market-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
 }
 
 .section-title {
@@ -76,9 +77,10 @@
 
 .hero-section {
   padding: 3rem 0;
-  background: linear-gradient(180deg, rgba(43, 45, 49, 0.1), rgba(43, 45, 49, 0.5));
+  background: linear-gradient(180deg, rgba(30, 32, 38, 0.7), rgba(20, 22, 28, 0.9));
   border-radius: 12px;
   margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .hero-title {
@@ -101,9 +103,8 @@
 
 /* New Styles for Market Intelligence Section */
 .glass-card {
-  background: rgba(25, 28, 36, 0.7);
+  background: rgba(25, 28, 36, 0.8);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
-

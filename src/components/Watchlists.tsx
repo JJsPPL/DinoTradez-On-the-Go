@@ -13,7 +13,10 @@ const Watchlists = () => {
     dinosaurThemed: [],
     technology: [],
     energy: [],
-    marketOverview: []
+    marketOverview: [],
+    lottoPicks: [],
+    crypto: [],
+    indices: []
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -95,10 +98,13 @@ const Watchlists = () => {
       />
       
       <Tabs defaultValue="dinosaurThemed" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3">
+        <TabsList className="grid grid-cols-6">
           <TabsTrigger value="dinosaurThemed">Dino Themed</TabsTrigger>
           <TabsTrigger value="technology">Technology</TabsTrigger>
           <TabsTrigger value="energy">Energy</TabsTrigger>
+          <TabsTrigger value="lottoPicks">Lotto Picks</TabsTrigger>
+          <TabsTrigger value="crypto">Crypto</TabsTrigger>
+          <TabsTrigger value="indices">Indices</TabsTrigger>
         </TabsList>
         
         <TabsContent value="dinosaurThemed" className="space-y-4">
@@ -137,6 +143,30 @@ const Watchlists = () => {
             title="Energy Stocks" 
             items={watchlists.energy}
             isLoading={isLoading && activeTab === 'energy'} 
+          />
+        </TabsContent>
+        
+        <TabsContent value="lottoPicks" className="space-y-4">
+          <WatchlistTable 
+            title="Lotto Picks" 
+            items={watchlists.lottoPicks}
+            isLoading={isLoading && activeTab === 'lottoPicks'} 
+          />
+        </TabsContent>
+        
+        <TabsContent value="crypto" className="space-y-4">
+          <WatchlistTable 
+            title="Cryptocurrency" 
+            items={watchlists.crypto}
+            isLoading={isLoading && activeTab === 'crypto'} 
+          />
+        </TabsContent>
+        
+        <TabsContent value="indices" className="space-y-4">
+          <WatchlistTable 
+            title="Market Indices" 
+            items={watchlists.indices}
+            isLoading={isLoading && activeTab === 'indices'} 
           />
         </TabsContent>
       </Tabs>

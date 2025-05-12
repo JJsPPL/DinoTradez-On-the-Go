@@ -5,10 +5,14 @@ import { Button } from '@/components/ui/button';
 import MobileNav from '@/components/MobileNav';
 import Watchlists from '@/components/Watchlists';
 import MarketIntelligence from '@/components/MarketIntelligence';
+import APIKeyConfig from '@/components/APIKeyConfig';
+import { getRapidAPIKey } from '@/services/stockService';
 
 const Home = () => {
+  const hasApiKey = !!getRapidAPIKey();
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-card/70">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-black/70">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-white/10">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -41,9 +45,18 @@ const Home = () => {
           </p>
         </div>
         
-        <Watchlists />
+        {!hasApiKey && (
+          <div className="mb-8">
+            <APIKeyConfig onConfigured={() => window.location.reload()} />
+          </div>
+        )}
         
-        <MarketIntelligence />
+        {hasApiKey && (
+          <>
+            <Watchlists />
+            <MarketIntelligence />
+          </>
+        )}
       </main>
 
       {/* Footer */}

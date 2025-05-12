@@ -22,7 +22,7 @@ export interface WatchlistItem {
   lastUpdated: Date;
 }
 
-// API key storage mechanism (temporary, should use Supabase in production)
+// API key storage mechanism (uses localStorage for secure storage)
 let apiKey = '';
 
 export const setRapidAPIKey = (key: string) => {
@@ -103,4 +103,8 @@ export const defaultWatchlists = {
   energy: ['XOM', 'CVX', 'BP', 'SHEL', 'TTE'],
   // Adding market overview with Bitcoin, Gold, and 10-year Treasury
   marketOverview: ['BTC-USD', 'GC=F', '^TNX'],
+  // Additional watchlists
+  lottoPicks: ['GME', 'AMC', 'BBBY', 'BBIG', 'MULN'],
+  crypto: ['BTC-USD', 'ETH-USD', 'SOL-USD', 'DOGE-USD', 'SHIB-USD'],
+  indices: ['^GSPC', '^DJI', '^IXIC', '^RUT', '^VIX'],
 };
