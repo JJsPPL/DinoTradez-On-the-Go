@@ -8,13 +8,16 @@ import { toast } from '@/components/ui/use-toast';
 
 const APIKeyConfig = ({ onConfigured }: { onConfigured?: () => void }) => {
   const [apiKey, setApiKey] = useState('');
+  const [isApiConfigured, setIsApiConfigured] = useState(false);
 
   useEffect(() => {
     const savedKey = getRapidAPIKey();
     if (savedKey) {
       setApiKey(savedKey);
+      setIsApiConfigured(true);
+      if (onConfigured) onConfigured();
     }
-  }, []);
+  }, [onConfigured]);
 
   const handleSaveKey = () => {
     if (!apiKey.trim()) {
@@ -27,12 +30,17 @@ const APIKeyConfig = ({ onConfigured }: { onConfigured?: () => void }) => {
     }
     
     setRapidAPIKey(apiKey.trim());
+    setIsApiConfigured(true);
     toast({
       title: "Success",
       description: "RapidAPI key has been saved",
     });
     if (onConfigured) onConfigured();
   };
+
+  if (isApiConfigured) {
+    return null; // Don't show anything if API is configured
+  }
 
   return (
     <Card>
@@ -46,7 +54,7 @@ const APIKeyConfig = ({ onConfigured }: { onConfigured?: () => void }) => {
         <div className="flex flex-col gap-4">
           <div>
             <p className="text-sm text-muted-foreground mb-2">
-              Get your API key from <a href="https://rapidapi.com/finapi/api/yahoo-finance15" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">RapidAPI Yahoo Finance</a>
+              Default API key is pre-configured. To use a custom key, get it from <a href="https://rapidapi.com/finapi/api/yahoo-finance15" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">RapidAPI Yahoo Finance</a>
             </p>
           </div>
           <Input 

@@ -22,8 +22,11 @@ export interface WatchlistItem {
   lastUpdated: Date;
 }
 
+// Default API key for the application
+const DEFAULT_API_KEY = '48b0ef34e6msh9fe72fb5f0d3e4ap126332jsn1e6298c105ee';
+
 // API key storage mechanism (uses localStorage for secure storage)
-let apiKey = '';
+let apiKey = DEFAULT_API_KEY;
 
 export const setRapidAPIKey = (key: string) => {
   apiKey = key;
@@ -32,23 +35,23 @@ export const setRapidAPIKey = (key: string) => {
 };
 
 export const getRapidAPIKey = (): string => {
-  if (!apiKey) {
-    apiKey = localStorage.getItem('rapidapi_key') || '';
+  if (!apiKey || apiKey === DEFAULT_API_KEY) {
+    const storedKey = localStorage.getItem('rapidapi_key');
+    if (storedKey) {
+      apiKey = storedKey;
+    }
   }
   return apiKey;
 };
 
+// Initialize API key on module load
+if (!localStorage.getItem('rapidapi_key')) {
+  setRapidAPIKey(DEFAULT_API_KEY);
+}
+
 export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]> => {
   const key = getRapidAPIKey();
-  if (!key) {
-    toast({
-      title: "API Key Missing",
-      description: "Please configure your RapidAPI key in settings",
-      variant: "destructive",
-    });
-    return [];
-  }
-
+  
   try {
     // Using try-catch to handle network errors better
     const controller = new AbortController();

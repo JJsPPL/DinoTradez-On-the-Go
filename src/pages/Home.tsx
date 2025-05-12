@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import MobileNav from '@/components/MobileNav';
@@ -10,7 +10,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getRapidAPIKey } from '@/services/stockService';
 
 const Home = () => {
-  const [hasApiKey, setHasApiKey] = useState<boolean>(!!getRapidAPIKey());
+  const [hasApiKey, setHasApiKey] = useState<boolean>(true); // Default to true since we have a default API key
+
+  useEffect(() => {
+    // This is just to ensure we check if the key exists
+    setHasApiKey(!!getRapidAPIKey());
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-black/70">
@@ -46,18 +51,15 @@ const Home = () => {
           </p>
         </div>
         
+        {/* API key configuration is shown only if needed */}
         {!hasApiKey && (
           <div className="mb-8">
             <APIKeyConfig onConfigured={() => setHasApiKey(true)} />
           </div>
         )}
         
-        {hasApiKey && (
-          <>
-            <Watchlists />
-            <MarketIntelligence />
-          </>
-        )}
+        <Watchlists />
+        <MarketIntelligence />
         
         {/* Disclaimer Section */}
         <Card className="mt-8 bg-muted/50 border border-white/10">
