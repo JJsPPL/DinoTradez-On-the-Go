@@ -328,7 +328,7 @@ const MarketIntelligence = () => {
         <div className="text-center p-4 bg-teal-900/50">
           <h2 className="text-2xl font-bold">Lotto Stock Picks</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Stocks with >1M volume and -90% to -99% change
+            Stocks with {'>'}1M volume and -90% to -99% change
           </p>
         </div>
         
