@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ExternalLink } from 'lucide-react';
+import { CheckedState } from '@radix-ui/react-checkbox';
 
 interface S3Filing {
   id: string;
@@ -38,6 +39,14 @@ const MarketIntelligence = () => {
 
   const [showLottoPicks, setShowLottoPicks] = useState(true);
   const [showVolume, setShowVolume] = useState(true);
+
+  const handleLottoPicksChange = (checked: CheckedState) => {
+    setShowLottoPicks(checked === true);
+  };
+
+  const handleVolumeChange = (checked: CheckedState) => {
+    setShowVolume(checked === true);
+  };
 
   return (
     <div className="space-y-6 py-6">
@@ -99,12 +108,12 @@ const MarketIntelligence = () => {
           
           <div className="p-3 flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Checkbox id="lotto-picks" checked={showLottoPicks} onCheckedChange={setShowLottoPicks} />
+              <Checkbox id="lotto-picks" checked={showLottoPicks} onCheckedChange={handleLottoPicksChange} />
               <label htmlFor="lotto-picks" className="text-sm">Show Lotto Picks (-90% to -99% change)</label>
             </div>
             
             <div className="flex items-center space-x-2">
-              <Checkbox id="volume-only" checked={showVolume} onCheckedChange={setShowVolume} />
+              <Checkbox id="volume-only" checked={showVolume} onCheckedChange={handleVolumeChange} />
               <label htmlFor="volume-only" className="text-sm">1M Volume Only</label>
             </div>
           </div>
