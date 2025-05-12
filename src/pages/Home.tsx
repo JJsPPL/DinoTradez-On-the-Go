@@ -1,15 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import MobileNav from '@/components/MobileNav';
 import Watchlists from '@/components/Watchlists';
 import MarketIntelligence from '@/components/MarketIntelligence';
 import APIKeyConfig from '@/components/APIKeyConfig';
+import { Card, CardContent } from '@/components/ui/card';
 import { getRapidAPIKey } from '@/services/stockService';
 
 const Home = () => {
-  const hasApiKey = !!getRapidAPIKey();
+  const [hasApiKey, setHasApiKey] = useState<boolean>(!!getRapidAPIKey());
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-black/70">
@@ -47,7 +48,7 @@ const Home = () => {
         
         {!hasApiKey && (
           <div className="mb-8">
-            <APIKeyConfig onConfigured={() => window.location.reload()} />
+            <APIKeyConfig onConfigured={() => setHasApiKey(true)} />
           </div>
         )}
         
@@ -57,6 +58,38 @@ const Home = () => {
             <MarketIntelligence />
           </>
         )}
+        
+        {/* Disclaimer Section */}
+        <Card className="mt-8 bg-muted/50 border border-white/10">
+          <CardContent className="p-6">
+            <div className="space-y-4 text-sm text-muted-foreground">
+              <div>
+                <h4 className="font-semibold mb-2">Important Notice:</h4>
+                <p className="text-xs mb-3">
+                  The use of DinoTradez site does not guarantee profitable results. This site should not be used as a standalone analysis tool. 
+                  It is essential to combine it with other forms of analysis, such as fundamental analysis, technical analysis, risk 
+                  management strategies, and awareness of current market conditions. Always conduct thorough research.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Note:</h4>
+                <p className="text-xs mb-3">
+                  The effectiveness of DinoTradez site can vary based on market conditions and individual trading styles. 
+                  It's crucial to test strategies thoroughly using historical data before applying them in live trading scenarios.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Disclaimer:</h4>
+                <p className="text-xs">
+                  Trading financial instruments involves substantial risk and may not be suitable for all investors. 
+                  Past performance is not indicative of future results. This website is provided for informational, 
+                  educational and most importantly entertainment purposes only and should not be considered investment advice. 
+                  Always conduct your own research before making any financial decisions. DinoTradez is not liable for your actions.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </main>
 
       {/* Footer */}
