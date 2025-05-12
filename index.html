@@ -48,8 +48,8 @@
         <header class="hero" role="banner">
             <div class="container">
                 <div class="hero-content">
-                    <h1>DinoTradez: Smart Trading with Data-Driven Insights</h1>
-                    <p class="hero-subtitle">Putting odds in your favor with probabilities on your side</p>
+                    <h1>DinoTradez putting odds in your favor</h1>
+                    <p class="hero-subtitle">with probabilities on your side</p>
                 </div>
             </div>
         </header>
@@ -62,203 +62,50 @@
                     <p>Track major indices and trending stocks</p>
                 </div>
                 <div class="market-indices" role="region" aria-label="Market indices">
-                    <article class="market-card" data-symbol="^GSPC">
+                    <div class="market-card" data-symbol="^GSPC">
                         <div class="market-info">
                             <h3>S&P 500</h3>
-                            <p class="market-value">Loading...</p>
+                            <p class="market-value">4,927.11</p>
+                            <div class="market-change positive">
+                                <span>+12.37 (0.25%)</span>
+                                <i class="fas fa-chart-line"></i>
+                            </div>
                         </div>
-                        <div class="market-change" aria-label="Market change">
-                            <p>--</p>
-                            <i class="fas fa-chart-line" aria-hidden="true"></i>
-                        </div>
-                    </article>
-                    <article class="market-card" data-symbol="^IXIC">
+                    </div>
+                    <div class="market-card" data-symbol="^IXIC">
                         <div class="market-info">
                             <h3>Nasdaq</h3>
-                            <p class="market-value">Loading...</p>
+                            <p class="market-value">15,982.01</p>
+                            <div class="market-change positive">
+                                <span>+87.64 (0.55%)</span>
+                                <i class="fas fa-chart-line"></i>
+                            </div>
                         </div>
-                        <div class="market-change">
-                            <p>--</p>
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                    </article>
-                    <article class="market-card" data-symbol="^DJI">
+                    </div>
+                    <div class="market-card" data-symbol="^DJI">
                         <div class="market-info">
                             <h3>Dow Jones</h3>
-                            <p class="market-value">Loading...</p>
+                            <p class="market-value">38,612.24</p>
+                            <div class="market-change negative">
+                                <span>-34.12 (0.09%)</span>
+                                <i class="fas fa-chart-line"></i>
+                            </div>
                         </div>
-                        <div class="market-change">
-                            <p>--</p>
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                    </article>
-                    <article class="market-card" data-symbol="^RUT">
+                    </div>
+                    <div class="market-card" data-symbol="^RUT">
                         <div class="market-info">
                             <h3>Russell 2000</h3>
-                            <p class="market-value">Loading...</p>
+                            <p class="market-value">2,008.36</p>
+                            <div class="market-change positive">
+                                <span>+11.98 (0.60%)</span>
+                                <i class="fas fa-chart-line"></i>
+                            </div>
                         </div>
-                        <div class="market-change">
-                            <p>--</p>
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                    </article>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Advertisement Banner 1 -->
-        <div class="ad-banner">
-            <div class="container">
-                <a href="https://www.pacificnwextremefishingforecast.com" target="_blank" class="ad-link">
-                    <div class="ad-content">
-                        <img src="phoenix-logo.png" alt="DinoTradez" class="ad-logo">
-                        <div class="ad-text">
-                            <h3>DinoTradez</h3>
-                            <p>Stock Market Analysis</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- Advertisement Banner 2 -->
-        <div class="ad-banner alt-color">
-            <div class="container">
-                <a href="https://www.pacificnwextremefishingforecast.com" target="_blank" class="ad-link">
-                    <div class="ad-content">
-                        <img src="https://via.placeholder.com/50x50?text=JJS" alt="JJ's Catering" class="ad-logo">
-                        <div class="ad-text">
-                            <h3>JJ's Catering</h3>
-                            <p>Premium catering services for all occasions</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <!-- Stock Watchlist Section -->
-        <section class="stock-watchlist" id="markets" aria-labelledby="watchlist-title">
-            <div class="container">
-                <div class="section-header">
-                    <h2 id="watchlist-title">Stock Watchlist</h2>
-                    <p>Monitor your favorite stocks with real-time data</p>
-                </div>
-                <div class="watchlist-container">
-                    <form class="search-box" role="search">
-                        <label for="stock-search" class="visually-hidden">Search for stocks</label>
-                        <input type="text" id="stock-search" class="search-input" placeholder="Enter stock symbol (e.g., AAPL)" aria-label="Enter stock symbol">
-                        <button type="submit" class="search-button">Add to Watchlist</button>
-                    </form>
-                    <div class="table-wrapper">
-                        <table class="data-table" id="watchlist-table" role="grid" aria-label="Stock watchlist">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Symbol</th>
-                                    <th scope="col">Last</th>
-                                    <th scope="col">Net Chng</th>
-                                    <th scope="col">%Change</th>
-                                    <th scope="col">Shares</th>
-                                    <th scope="col">Auth</th>
-                                    <th scope="col">Market Cap</th>
-                                    <th scope="col">MC/CE</th>
-                                    <th scope="col">Volume</th>
-                                    <th scope="col">Avg Vol</th>
-                                    <th scope="col">Rel Vol</th>
-                                    <th scope="col">DP %</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="symbol-col">AAPL</td>
-                                    <td>175.42</td>
-                                    <td class="positive">+2.77</td>
-                                    <td class="positive">+1.58%</td>
-                                    <td>15.7B</td>
-                                    <td>50.0B</td>
-                                    <td>2.74T</td>
-                                    <td>28.65</td>
-                                    <td>55.92M</td>
-                                    <td>61.54M</td>
-                                    <td>0.91</td>
-                                    <td>42.8%</td>
-                                </tr>
-                                <tr>
-                                    <td class="symbol-col">NVDA</td>
-                                    <td>681.22</td>
-                                    <td class="positive">+10.72</td>
-                                    <td class="positive">+1.60%</td>
-                                    <td>2.47B</td>
-                                    <td>4.0B</td>
-                                    <td>1.68T</td>
-                                    <td>51.24</td>
-                                    <td>43.52M</td>
-                                    <td>47.89M</td>
-                                    <td>0.91</td>
-                                    <td>46.2%</td>
-                                </tr>
-                                <tr>
-                                    <td class="symbol-col">TSLA</td>
-                                    <td>273.58</td>
-                                    <td class="negative">-7.41</td>
-                                    <td class="negative">-2.64%</td>
-                                    <td>3.19B</td>
-                                    <td>6.0B</td>
-                                    <td>872.48B</td>
-                                    <td>18.75</td>
-                                    <td>118.54M</td>
-                                    <td>97.12M</td>
-                                    <td>1.22</td>
-                                    <td>48.7%</td>
-                                </tr>
-                                <tr>
-                                    <td class="symbol-col">MSFT</td>
-                                    <td>310.87</td>
-                                    <td class="positive">+2.65</td>
-                                    <td class="positive">+0.86%</td>
-                                    <td>7.43B</td>
-                                    <td>24.0B</td>
-                                    <td>2.31T</td>
-                                    <td>12.43</td>
-                                    <td>23.79M</td>
-                                    <td>26.18M</td>
-                                    <td>0.91</td>
-                                    <td>38.5%</td>
-                                </tr>
-                                <tr>
-                                    <td class="symbol-col">AMZN</td>
-                                    <td>129.83</td>
-                                    <td class="positive">+1.36</td>
-                                    <td class="positive">+1.06%</td>
-                                    <td>10.42B</td>
-                                    <td>25.0B</td>
-                                    <td>1.35T</td>
-                                    <td>13.27</td>
-                                    <td>47.82M</td>
-                                    <td>51.33M</td>
-                                    <td>0.93</td>
-                                    <td>45.1%</td>
-                                </tr>
-                                <tr>
-                                    <td class="symbol-col">META</td>
-                                    <td>324.62</td>
-                                    <td class="positive">+4.52</td>
-                                    <td class="positive">+1.41%</td>
-                                    <td>2.55B</td>
-                                    <td>10.0B</td>
-                                    <td>828.15B</td>
-                                    <td>5.96</td>
-                                    <td>14.68M</td>
-                                    <td>16.23M</td>
-                                    <td>0.90</td>
-                                    <td>39.8%</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
         <!-- Market Intelligence Section -->
         <section class="market-intelligence">
             <div class="container">
@@ -278,46 +125,27 @@
                             <div class="filing-item">
                                 <div class="filing-company">Palantir Technologies Inc (PLTR)</div>
                                 <div class="filing-details">
-                                    <div class="filing-type">S-3ASR</div>
-                                    <div class="filing-date">2025-04-10</div>
+                                    <span class="filing-type">S-3ASR</span>
+                                    <span class="filing-date">2025-04-10</span>
                                 </div>
-                                <a href="#" class="filing-link"><i class="fas fa-external-link-alt"></i></a>
                             </div>
                             <div class="filing-item">
                                 <div class="filing-company">SoFi Technologies, Inc. (SOFI)</div>
                                 <div class="filing-details">
-                                    <div class="filing-type">S-3</div>
-                                    <div class="filing-date">2025-04-09</div>
+                                    <span class="filing-type">S-3</span>
+                                    <span class="filing-date">2025-04-09</span>
                                 </div>
-                                <a href="#" class="filing-link"><i class="fas fa-external-link-alt"></i></a>
                             </div>
                             <div class="filing-item">
                                 <div class="filing-company">Lucid Group, Inc. (LCID)</div>
                                 <div class="filing-details">
-                                    <div class="filing-type">S-3ASR</div>
-                                    <div class="filing-date">2025-04-08</div>
+                                    <span class="filing-type">S-3ASR</span>
+                                    <span class="filing-date">2025-04-08</span>
                                 </div>
-                                <a href="#" class="filing-link"><i class="fas fa-external-link-alt"></i></a>
-                            </div>
-                            <div class="filing-item">
-                                <div class="filing-company">Rivian Automotive, Inc. (RIVN)</div>
-                                <div class="filing-details">
-                                    <div class="filing-type">S-3</div>
-                                    <div class="filing-date">2025-04-07</div>
-                                </div>
-                                <a href="#" class="filing-link"><i class="fas fa-external-link-alt"></i></a>
-                            </div>
-                            <div class="filing-item">
-                                <div class="filing-company">Beyond Meat, Inc. (BYND)</div>
-                                <div class="filing-details">
-                                    <div class="filing-type">S-3</div>
-                                    <div class="filing-date">2025-04-05</div>
-                                </div>
-                                <a href="#" class="filing-link"><i class="fas fa-external-link-alt"></i></a>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?company=&CIK=&type=S-3&owner=include&count=40&action=getcurrent" class="view-all-link" target="_blank">View All S-3 Filings <i class="fas fa-arrow-right"></i></a>
+                            <a href="#" class="view-all-link">View All S-3 Filings <i class="fas fa-arrow-right"></i></a>
                         </div>
                     </div>
                     
@@ -327,78 +155,39 @@
                             <h3><i class="fas fa-chart-pie"></i> High Short Interest</h3>
                             <span class="data-source">Source: FINRA (>1M Volume)</span>
                         </div>
-                        <div class="short-interest-filter">
-                            <div class="filter-options">
-                                <label>
-                                    <input type="checkbox" id="lotto-filter" checked>
-                                    Show Lotto Picks (-90% to -99% change)
-                                </label>
-                                <label>
-                                    <input type="checkbox" id="volume-filter" checked>
-                                    >1M Volume Only
-                                </label>
-                            </div>
-                        </div>
                         <div class="short-interest-data">
                             <div class="short-interest-header">
-                                <div class="short-column">Symbol</div>
-                                <div class="short-column">Short %</div>
-                                <div class="short-column">Change</div>
-                                <div class="short-column">Volume</div>
-                            </div>
-                            <div class="short-interest-item lotto">
-                                <div class="short-column">BBBY</div>
-                                <div class="short-column warning">30.02%</div>
-                                <div class="short-column negative">-93.14%</div>
-                                <div class="short-column">10.5M</div>
-                            </div>
-                            <div class="short-interest-item lotto">
-                                <div class="short-column">CVNA</div>
-                                <div class="short-column warning">18.82%</div>
-                                <div class="short-column negative">-96.65%</div>
-                                <div class="short-column">6.2M</div>
-                            </div>
-                            <div class="short-interest-item lotto">
-                                <div class="short-column">SNDL</div>
-                                <div class="short-column warning">16.73%</div>
-                                <div class="short-column negative">-94.78%</div>
-                                <div class="short-column">9.8M</div>
+                                <div>Symbol</div>
+                                <div>Short %</div>
+                                <div>Change</div>
+                                <div>Volume</div>
                             </div>
                             <div class="short-interest-item">
-                                <div class="short-column">GME</div>
-                                <div class="short-column warning">20.93%</div>
-                                <div class="short-column positive">+3.42%</div>
-                                <div class="short-column">7.1M</div>
+                                <div>BBBY</div>
+                                <div class="warning">30.02%</div>
+                                <div class="negative">-93.14%</div>
+                                <div>10.5M</div>
                             </div>
                             <div class="short-interest-item">
-                                <div class="short-column">AMC</div>
-                                <div class="short-column warning">18.13%</div>
-                                <div class="short-column positive">+2.78%</div>
-                                <div class="short-column">15.5M</div>
+                                <div>CVNA</div>
+                                <div class="warning">18.82%</div>
+                                <div class="negative">-96.65%</div>
+                                <div>6.2M</div>
+                            </div>
+                            <div class="short-interest-item">
+                                <div>GME</div>
+                                <div class="warning">20.93%</div>
+                                <div class="positive">+3.42%</div>
+                                <div>7.1M</div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <a href="https://otce.finra.org/otce/equityShortInterest" class="view-all-link" target="_blank">View All Short Interest Data <i class="fas fa-arrow-right"></i></a>
+                            <a href="#" class="view-all-link">View All Short Interest Data <i class="fas fa-arrow-right"></i></a>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- Advertisement Banner 3 -->
-        <div class="ad-banner">
-            <div class="container">
-                <a href="https://www.pacificnwextremefishingforecast.com" target="_blank" class="ad-link">
-                    <div class="ad-content">
-                        <img src="https://via.placeholder.com/50x50?text=AMSOIL" alt="AMSOIL" class="ad-logo">
-                        <div class="ad-text">
-                            <h3>AMSOIL</h3>
-                            <p>Premium synthetic lubricants for your vehicle</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
 
         <!-- Dark Pool Activity Section -->
         <section class="data-section" id="darkpool">
