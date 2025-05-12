@@ -10,7 +10,7 @@ interface WatchlistTableProps {
 }
 
 const WatchlistTable: React.FC<WatchlistTableProps> = ({ title, items, isLoading }) => {
-  // Simple function to display the title properly
+  // Simple function to display the title properly - now directly returns Bullish or Bearish
   const displayTitle = () => {
     if (title === "Bullish Watchlist") return "Bullish";
     if (title === "Bearish Watchlist") return "Bearish";
