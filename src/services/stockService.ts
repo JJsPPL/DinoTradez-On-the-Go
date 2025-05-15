@@ -1,4 +1,4 @@
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 // Types for stock data
 export interface StockQuote {
@@ -23,9 +23,19 @@ export interface WatchlistItem {
 
 export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]> => {
   try {
+    console.log('Fetching stock quotes for symbols:', symbols.join(','));
+    
+    // In development, consider using mock data
+    if (process.env.NODE_ENV === 'development' && process.env.VITE_USE_MOCK === 'true') {
+      console.log('Using mock data for development');
+      return symbols.map(symbol => createMockStockQuote(symbol));
+    }
+    
+    // Prepare the API URL
     const response = await fetch(`/api/stock-data?symbols=${symbols.join(',')}`);
 
     if (!response.ok) {
+      console.error(`API request failed with status ${response.status}`);
       throw new Error(`API request failed with status ${response.status}`);
     }
 
@@ -34,6 +44,12 @@ export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]>
     // Check if data has the expected structure
     if (!data || !Array.isArray(data.quoteResponse?.result)) {
       console.error('Unexpected API response structure:', data);
+      
+      // If there's an error message in the response, display it
+      if (data.message) {
+        toast(`API Error: ${data.message}`);
+      }
+      
       throw new Error('Invalid API response format');
     }
 
@@ -48,11 +64,11 @@ export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]>
     }));
   } catch (error) {
     console.error('Error fetching stock quotes:', error);
-    toast({
-      title: "Failed to fetch stock data",
-      description: error instanceof Error ? error.message : "Unknown error occurred",
-      variant: "destructive",
-    });
+    
+    // Show a more detailed error message
+    toast(`Failed to fetch stock data: ${error instanceof Error ? error.message : "Unknown error"}. Please check your network connection or API key.`);
+    
+    // Return empty array so the app doesn't crash
     return [];
   }
 };
