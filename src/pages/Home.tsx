@@ -1,22 +1,12 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import MobileNav from '@/components/MobileNav';
 import Watchlists from '@/components/Watchlists';
 import MarketIntelligence from '@/components/MarketIntelligence';
-import APIKeyConfig from '@/components/APIKeyConfig';
 import { Card, CardContent } from '@/components/ui/card';
-import { getRapidAPIKey } from '@/services/stockService';
 
 const Home = () => {
-  const [hasApiKey, setHasApiKey] = useState<boolean>(true); // Default to true since we have a default API key
-
-  useEffect(() => {
-    // This is just to ensure we check if the key exists
-    setHasApiKey(!!getRapidAPIKey());
-  }, []);
-
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-black/70">
       {/* Header */}
@@ -50,13 +40,6 @@ const Home = () => {
             Advanced trading intelligence for the modern investor
           </p>
         </div>
-        
-        {/* API key configuration is shown only if needed */}
-        {!hasApiKey && (
-          <div className="mb-8">
-            <APIKeyConfig onConfigured={() => setHasApiKey(true)} />
-          </div>
-        )}
         
         <Watchlists />
         <MarketIntelligence />
