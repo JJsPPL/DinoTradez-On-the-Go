@@ -21,29 +21,23 @@ export interface WatchlistItem {
   lastUpdated: Date;
 }
 
-// API key storage mechanism (using default key)
-const DEFAULT_API_KEY = '48b0ef34e6msh9fe72fb5f0d3e4ap126332jsn1e6298c105ee';
-
-export const getRapidAPIKey = (): string => {
-  return DEFAULT_API_KEY;
-};
-
 export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]> => {
   try {
-    const response = await fetch(`https://yahoo-finance15.p.rapidapi.com/api/v1/markets/quote?ticker=${symbols.join(',')}`, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': DEFAULT_API_KEY,
-        'X-RapidAPI-Host': 'yahoo-finance15.p.rapidapi.com'
-      }
-    });
+    const response = await fetch(`/api/stock-data?symbols=${symbols.join(',')}`);
 
     if (!response.ok) {
       throw new Error(`API request failed with status ${response.status}`);
     }
 
     const data = await response.json();
-    return data.map((item: any) => ({
+    
+    // Check if data has the expected structure
+    if (!data || !Array.isArray(data.quoteResponse?.result)) {
+      console.error('Unexpected API response structure:', data);
+      throw new Error('Invalid API response format');
+    }
+
+    return data.quoteResponse.result.map((item: any) => ({
       symbol: item.symbol,
       regularMarketPrice: item.regularMarketPrice,
       regularMarketChange: item.regularMarketChange,

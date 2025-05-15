@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { fetchStockQuotes, convertToWatchlistItems, defaultWatchlists, WatchlistItem } from '@/services/stockService';
 import WatchlistTable from './WatchlistTable';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer } from '@/components/ui/chart';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { toast } from '@/components/ui/use-toast';
 
 const UPDATE_INTERVAL = 10000; // Update every 10 seconds
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 seconds
 
 const Watchlists = () => {
   const [activeTab, setActiveTab] = useState<string>('dinosaurThemed');
@@ -21,48 +24,58 @@ const Watchlists = () => {
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState<number>(0);
 
-  // Function to load watchlist data
-  const loadWatchlists = async () => {
+  // Function to load watchlist data with retry logic
+  const loadWatchlists = useCallback(async () => {
     setIsLoading(true);
     try {
       const symbols = defaultWatchlists[activeTab as keyof typeof defaultWatchlists];
       const quotes = await fetchStockQuotes(symbols);
+      
       if (quotes.length > 0) {
         setWatchlists(prev => ({
           ...prev,
           [activeTab]: convertToWatchlistItems(quotes)
         }));
         setLastUpdated(new Date());
+        setRetryCount(0); // Reset retry count on success
+      } else if (retryCount < MAX_RETRIES) {
+        // Retry if no data received
+        setTimeout(() => {
+          setRetryCount(prev => prev + 1);
+          loadWatchlists();
+        }, RETRY_DELAY);
+      } else {
+        toast({
+          title: "Unable to fetch data",
+          description: "Please try again later or contact support if the problem persists.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Error loading watchlist:', error);
+      if (retryCount < MAX_RETRIES) {
+        setTimeout(() => {
+          setRetryCount(prev => prev + 1);
+          loadWatchlists();
+        }, RETRY_DELAY);
+      }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [activeTab, retryCount]);
 
   // Load initial data
   useEffect(() => {
     loadWatchlists();
-  }, [activeTab]);
+  }, [activeTab, loadWatchlists]);
 
   // Set up automatic updates
   useEffect(() => {
     const intervalId = setInterval(loadWatchlists, UPDATE_INTERVAL);
     return () => clearInterval(intervalId);
-  }, [activeTab]);
-
-  // Mock price history data for visualization
-  const mockPriceHistory = [
-    { date: '2025-04-01', price: 125.3 },
-    { date: '2025-04-02', price: 128.5 },
-    { date: '2025-04-03', price: 130.2 },
-    { date: '2025-04-04', price: 127.8 },
-    { date: '2025-04-05', price: 129.4 },
-    { date: '2025-04-06', price: 132.1 },
-    { date: '2025-04-07', price: 135.7 },
-  ];
+  }, [loadWatchlists]);
 
   return (
     <div className="space-y-4">
@@ -72,13 +85,18 @@ const Watchlists = () => {
           <span className="text-sm text-muted-foreground">
             {lastUpdated ? `Last updated: ${lastUpdated.toLocaleTimeString()}` : 'Not updated yet'}
           </span>
-          <Button size="sm" onClick={loadWatchlists} disabled={isLoading}>
+          <Button 
+            size="sm" 
+            onClick={() => {
+              setRetryCount(0);
+              loadWatchlists();
+            }} 
+            disabled={isLoading}
+          >
             {isLoading ? 'Updating...' : 'Refresh'}
           </Button>
         </div>
       </div>
-      
-      {/* Removed the Market Overview watchlist as requested */}
       
       <Tabs defaultValue="dinosaurThemed" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-6">
@@ -90,68 +108,36 @@ const Watchlists = () => {
           <TabsTrigger value="indices">Indices</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="dinosaurThemed" className="space-y-4">
-          <WatchlistTable 
-            title="Dinosaur Themed Stocks" 
-            items={watchlists.dinosaurThemed}
-            isLoading={isLoading && activeTab === 'dinosaurThemed'} 
-          />
-          
-          <div className="mt-6">
-            <h3 className="text-lg font-medium mb-2">Price Trend</h3>
-            <div className="h-64">
-              <ChartContainer config={{}} className="h-full">
-                <LineChart data={mockPriceHistory}>
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="price" stroke="#22c55e" activeDot={{ r: 8 }} />
-                </LineChart>
-              </ChartContainer>
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="technology" className="space-y-4">
-          <WatchlistTable 
-            title="Technology Stocks" 
-            items={watchlists.technology}
-            isLoading={isLoading && activeTab === 'technology'} 
-          />
-        </TabsContent>
-        
-        <TabsContent value="energy" className="space-y-4">
-          <WatchlistTable 
-            title="Energy Stocks" 
-            items={watchlists.energy}
-            isLoading={isLoading && activeTab === 'energy'} 
-          />
-        </TabsContent>
-        
-        <TabsContent value="lottoPicks" className="space-y-4">
-          <WatchlistTable 
-            title="Lotto Picks" 
-            items={watchlists.lottoPicks}
-            isLoading={isLoading && activeTab === 'lottoPicks'} 
-          />
-        </TabsContent>
-        
-        <TabsContent value="crypto" className="space-y-4">
-          <WatchlistTable 
-            title="Cryptocurrency" 
-            items={watchlists.crypto}
-            isLoading={isLoading && activeTab === 'crypto'} 
-          />
-        </TabsContent>
-        
-        <TabsContent value="indices" className="space-y-4">
-          <WatchlistTable 
-            title="Market Indices" 
-            items={watchlists.indices}
-            isLoading={isLoading && activeTab === 'indices'} 
-          />
-        </TabsContent>
+        {Object.entries(defaultWatchlists).map(([key, _]) => (
+          <TabsContent key={key} value={key} className="space-y-4">
+            <WatchlistTable 
+              title={`${key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')} Stocks`}
+              items={watchlists[key]}
+              isLoading={isLoading && activeTab === key} 
+            />
+            
+            {key === activeTab && watchlists[key].length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-medium mb-2">Price Trend</h3>
+                <div className="h-64">
+                  <ChartContainer config={{}} className="h-full">
+                    <LineChart data={watchlists[key].map(item => ({
+                      symbol: item.symbol,
+                      price: item.price,
+                      time: item.lastUpdated.toLocaleTimeString()
+                    }))}>
+                      <XAxis dataKey="time" />
+                      <YAxis />
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="price" stroke="#22c55e" activeDot={{ r: 8 }} />
+                    </LineChart>
+                  </ChartContainer>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );
