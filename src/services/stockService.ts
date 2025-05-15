@@ -23,9 +23,15 @@ export interface WatchlistItem {
 
 // API key storage mechanism (using default key)
 const DEFAULT_API_KEY = '48b0ef34e6msh9fe72fb5f0d3e4ap126332jsn1e6298c105ee';
+const API_KEY_STORAGE_KEY = 'rapidapi_key';
 
 export const getRapidAPIKey = (): string => {
-  return DEFAULT_API_KEY;
+  const storedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+  return storedKey || DEFAULT_API_KEY;
+};
+
+export const setRapidAPIKey = (apiKey: string): void => {
+  localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
 };
 
 export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]> => {
@@ -33,7 +39,7 @@ export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]>
     const response = await fetch(`https://yahoo-finance15.p.rapidapi.com/api/v1/markets/quote?ticker=${symbols.join(',')}`, {
       method: 'GET',
       headers: {
-        'X-RapidAPI-Key': DEFAULT_API_KEY,
+        'X-RapidAPI-Key': getRapidAPIKey(),
         'X-RapidAPI-Host': 'yahoo-finance15.p.rapidapi.com'
       }
     });
