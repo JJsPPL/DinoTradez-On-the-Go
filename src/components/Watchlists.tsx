@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { fetchStockQuotes, convertToWatchlistItems, defaultWatchlists, WatchlistItem } from '@/services/stockService';
 import WatchlistTable from './WatchlistTable';
@@ -6,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer } from '@/components/ui/chart';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+
+const UPDATE_INTERVAL = 10000; // Update every 10 seconds
 
 const Watchlists = () => {
   const [activeTab, setActiveTab] = useState<string>('dinosaurThemed');
@@ -41,16 +42,15 @@ const Watchlists = () => {
     }
   };
 
-  // Load data when tab changes
+  // Load initial data
   useEffect(() => {
     loadWatchlists();
-    
-    // Refresh every 60 seconds
-    const interval = setInterval(() => {
-      loadWatchlists();
-    }, 60000);
-    
-    return () => clearInterval(interval);
+  }, [activeTab]);
+
+  // Set up automatic updates
+  useEffect(() => {
+    const intervalId = setInterval(loadWatchlists, UPDATE_INTERVAL);
+    return () => clearInterval(intervalId);
   }, [activeTab]);
 
   // Mock price history data for visualization

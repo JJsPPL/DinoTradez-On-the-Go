@@ -1,4 +1,3 @@
-
 import { toast } from '@/components/ui/use-toast';
 
 // Types for stock data
@@ -22,67 +21,28 @@ export interface WatchlistItem {
   lastUpdated: Date;
 }
 
-// Default API key for the application
+// API key storage mechanism (using default key)
 const DEFAULT_API_KEY = '48b0ef34e6msh9fe72fb5f0d3e4ap126332jsn1e6298c105ee';
 
-// API key storage mechanism (uses localStorage for secure storage)
-let apiKey = DEFAULT_API_KEY;
-
-export const setRapidAPIKey = (key: string) => {
-  apiKey = key;
-  localStorage.setItem('rapidapi_key', key);
-  return true;
-};
-
 export const getRapidAPIKey = (): string => {
-  if (!apiKey || apiKey === DEFAULT_API_KEY) {
-    const storedKey = localStorage.getItem('rapidapi_key');
-    if (storedKey) {
-      apiKey = storedKey;
-    }
-  }
-  return apiKey;
+  return DEFAULT_API_KEY;
 };
-
-// Initialize API key on module load
-if (!localStorage.getItem('rapidapi_key')) {
-  setRapidAPIKey(DEFAULT_API_KEY);
-}
 
 export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]> => {
-  const key = getRapidAPIKey();
-  
   try {
-    // Using try-catch to handle network errors better
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
     const response = await fetch(`https://yahoo-finance15.p.rapidapi.com/api/v1/markets/quote?ticker=${symbols.join(',')}`, {
       method: 'GET',
       headers: {
-        'X-RapidAPI-Key': key,
+        'X-RapidAPI-Key': DEFAULT_API_KEY,
         'X-RapidAPI-Host': 'yahoo-finance15.p.rapidapi.com'
-      },
-      signal: controller.signal
+      }
     });
 
-    clearTimeout(timeoutId);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`API request failed with status ${response.status}: ${errorText}`);
       throw new Error(`API request failed with status ${response.status}`);
     }
 
-    // Add mock data fallback if needed for development
     const data = await response.json();
-    
-    // Ensure data is an array
-    if (!Array.isArray(data)) {
-      console.error('Unexpected API response format:', data);
-      return [];
-    }
-
     return data.map((item: any) => ({
       symbol: item.symbol,
       regularMarketPrice: item.regularMarketPrice,
@@ -94,28 +54,11 @@ export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]>
     }));
   } catch (error) {
     console.error('Error fetching stock quotes:', error);
-    
-    // Better error handling with more specific messages
-    let errorMessage = "Unknown error occurred";
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        errorMessage = "Request timed out. Please try again.";
-      } else {
-        errorMessage = error.message;
-      }
-    }
-    
     toast({
       title: "Failed to fetch stock data",
-      description: errorMessage,
+      description: error instanceof Error ? error.message : "Unknown error occurred",
       variant: "destructive",
     });
-    
-    // For development purposes, provide mock data to avoid breaking the UI
-    if (process.env.NODE_ENV === 'development') {
-      return symbols.map(symbol => createMockStockQuote(symbol));
-    }
-    
     return [];
   }
 };
