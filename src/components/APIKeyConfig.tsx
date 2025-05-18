@@ -21,20 +21,13 @@ const APIKeyConfig = ({ onConfigured }: { onConfigured?: () => void }) => {
 
   const handleSaveKey = () => {
     if (!apiKey.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid API key",
-        variant: "destructive",
-      });
+      toast("Error: Please enter a valid API key");
       return;
     }
     
     setRapidAPIKey(apiKey.trim());
     setIsApiConfigured(true);
-    toast({
-      title: "Success",
-      description: "RapidAPI key has been saved",
-    });
+    toast("Success: RapidAPI key has been saved");
     if (onConfigured) onConfigured();
   };
 

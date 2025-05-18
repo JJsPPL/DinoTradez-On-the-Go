@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 
 // Types for stock data
@@ -24,7 +23,7 @@ export interface WatchlistItem {
 
 // Direct API endpoint for Yahoo Finance via RapidAPI
 const YAHOO_FINANCE_API = 'https://yahoo-finance127.p.rapidapi.com/v1/finance/quote';
-const RAPIDAPI_KEY = '48b0ef34e6msh9fe72fb5f0d3e4ap126332jsn1e6298c105ee';
+const DEFAULT_RAPIDAPI_KEY = '48b0ef34e6msh9fe72fb5f0d3e4ap126332jsn1e6298c105ee';
 const RAPIDAPI_HOST = 'yahoo-finance127.p.rapidapi.com';
 
 // API key storage mechanism (for backward compatibility)
@@ -32,7 +31,7 @@ const API_KEY_STORAGE_KEY = 'rapidapi_key';
 
 export const getRapidAPIKey = (): string => {
   const storedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
-  return storedKey || RAPIDAPI_KEY;
+  return storedKey || DEFAULT_RAPIDAPI_KEY;
 };
 
 export const setRapidAPIKey = (apiKey: string): void => {
@@ -54,7 +53,7 @@ export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]>
       const response = await fetch(`${YAHOO_FINANCE_API}?symbols=${symbols.join(',')}`, {
         method: 'GET',
         headers: {
-          'X-RapidAPI-Key': RAPIDAPI_KEY,
+          'X-RapidAPI-Key': getRapidAPIKey(),
           'X-RapidAPI-Host': RAPIDAPI_HOST,
         },
       });
