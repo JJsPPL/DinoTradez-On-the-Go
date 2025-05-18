@@ -1,0 +1,39 @@
+{
+  "mcpServers": {
+    "mcp-server": {
+      "command": "python",
+      "args": [
+        "C:\\MyProgram\\GitHub\\mcp-server\\server.py"
+      ],
+      "enable": true
+    },
+    "nasdaq-data": {
+      "command": "python",
+      "args": [
+        "C:\\MyProgram\\GitHub\\NASDAQstockdata.py"
+      ],
+      "enable": true
+    },
+    "nyse-data": {
+      "command": "python",
+      "args": [
+        "C:\\MyProgram\\GitHub\\NYSEstockdata.py"
+      ],
+      "enable": true
+    },
+    "otc-data": {
+      "command": "python",
+      "args": [
+        "C:\\MyProgram\\GitHub\\OTCstockdata.py"
+      ],
+      "enable": true
+    },
+    "stock-data": {
+      "command": "python",
+      "args": [
+        "C:\\MyProgram\\GitHub\\stockdata.py"
+      ],
+      "enable": true
+    }
+  }
+} 

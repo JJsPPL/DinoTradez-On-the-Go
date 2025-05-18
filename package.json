@@ -9,7 +9,8 @@
     "build": "vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "start-mcp": "node scripts/start-mcp-servers.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -59,7 +60,9 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "child_process": "^1.0.2",
+    "cross-spawn": "^7.0.3"
   },
   "devDependencies": {
     "@types/node": "^22.5.5",
