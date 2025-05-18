@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 
 // Types for stock data
@@ -50,7 +49,7 @@ export class StockService {
       console.log('Fetching stock quotes for symbols:', symbols.join(','));
       
       // Always use mock data when testing in development
-      if (process.env.NODE_ENV === 'development' && process.env.VITE_USE_MOCK === 'true') {
+      if (import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true') {
         console.log('Using mock data for development');
         return symbols.map(symbol => this.getMockStockPrice(symbol));
       }
@@ -118,8 +117,9 @@ export class StockService {
   
   /**
    * Helper function to create mock data for development
+   * Made public to fix TypeScript error with legacy functions
    */
-  private getMockStockPrice(symbol: string): StockPrice {
+  getMockStockPrice(symbol: string): StockPrice {
     // These would be actual stocks from the API
     const stockData: {[key: string]: {name: string, price: number, change: number, changePercent: number}} = {
       'DINO': { name: 'DINO Inc.', price: 41.91, change: -0.97, changePercent: -2.32 },
@@ -256,7 +256,7 @@ export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]>
 // Legacy helper function for backward compatibility
 const createMockStockQuote = (symbol: string): StockQuote => {
   const stockService = new StockService();
-  const mockPrice = new StockService().getMockStockPrice(symbol);
+  const mockPrice = stockService.getMockStockPrice(symbol);
   
   return {
     symbol: mockPrice.symbol,
@@ -316,6 +316,6 @@ export const getRapidAPIKey = (): string => {
 };
 
 // Initialize API key on module load
-if (!localStorage.getItem('rapidapi_key')) {
+if (typeof localStorage !== 'undefined' && !localStorage.getItem('rapidapi_key')) {
   setRapidAPIKey(DEFAULT_API_KEY);
 }

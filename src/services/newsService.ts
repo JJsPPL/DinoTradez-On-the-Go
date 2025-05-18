@@ -29,7 +29,7 @@ export class NewsService {
   async getLatestNews(symbols?: string[]): Promise<NewsItem[]> {
     try {
       // Always use mock data when testing in development
-      if (process.env.NODE_ENV === 'development' && process.env.VITE_USE_MOCK === 'true') {
+      if (import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true') {
         console.log('Using mock news data for development');
         return this.getMockNews(symbols);
       }
@@ -172,11 +172,14 @@ export class NewsService {
 // Legacy function for backward compatibility
 export const fetchMarketNews = async (symbols?: string[]): Promise<NewsItem[]> => {
   const newsService = new NewsService();
-  return newsService.getLatestNews(symbols);
+  return await newsService.getLatestNews(symbols);
 };
 
 // Legacy function for backward compatibility
 export const createMockNewsData = (): NewsItem[] => {
   const newsService = new NewsService();
-  return newsService.getLatestNews();
+  const mockNewsPromise = newsService.getLatestNews();
+  // This is a synchronous function that should return an array, not a promise
+  // Create a new instance and use the private method directly
+  return new NewsService().getMockNews();
 };
