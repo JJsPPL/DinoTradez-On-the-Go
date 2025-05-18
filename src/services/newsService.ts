@@ -87,8 +87,9 @@ export class NewsService {
 
   /**
    * Creates mock news data for development and fallbacks
+   * Made public to fix TypeScript error with legacy functions
    */
-  private getMockNews(symbols?: string[]): NewsItem[] {
+  getMockNews(symbols?: string[]): NewsItem[] {
     const now = new Date();
     const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
     
@@ -177,9 +178,7 @@ export const fetchMarketNews = async (symbols?: string[]): Promise<NewsItem[]> =
 
 // Legacy function for backward compatibility
 export const createMockNewsData = (): NewsItem[] => {
-  const newsService = new NewsService();
-  const mockNewsPromise = newsService.getLatestNews();
   // This is a synchronous function that should return an array, not a promise
-  // Create a new instance and use the private method directly
+  // Create a new instance and use the now-public getMockNews method directly
   return new NewsService().getMockNews();
 };
