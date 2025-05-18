@@ -1,12 +1,10 @@
-
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MobileNav from '@/components/MobileNav';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/use-toast';
 
 const GitHubPage = () => {
-  const { toast } = useToast();
   const githubPagesUrl = "https://jjsppl.github.io/DinoTradez-On-the-Go/";
   const githubRepoUrl = "https://github.com/JJSPPL/DinoTradez-On-the-Go";
 
