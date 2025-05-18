@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "exa": {
+      "command": "node",
+      "args": ["C:\\MyProgram\\GitHub\\exa-mcp-server\\src\\index.js"]
+    },
+    "magic": {
+      "command": "node",
+      "args": ["C:\\MyProgram\\GitHub\\magic-mcp\\src\\index.js"]
+    },
+    "crawl4ai-rag": {
+      "command": "node",
+      "args": ["C:\\MyProgram\\GitHub\\mcp-crawl4ai-rag\\src\\index.js"]
+    },
+    "claude-task-master": {
+      "command": "node",
+      "args": ["C:\\MyProgram\\GitHub\\claude-task-master\\src\\index.js"]
+    }
+  }
+} 

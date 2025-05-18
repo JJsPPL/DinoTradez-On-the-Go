@@ -34,6 +34,49 @@
         "C:\\MyProgram\\GitHub\\stockdata.py"
       ],
       "enable": true
+    },
+    "exe-mcp-server": {
+      "command": "python",
+      "args": [
+        "C:\\MyProgram\\GitHub\\exe-mcp-server\\server.py"
+      ],
+      "enable": true
+    },
+    "magic-mcp": {
+      "command": "python",
+      "args": [
+        "C:\\MyProgram\\GitHub\\magic-mcp\\server.py"
+      ],
+      "enable": true
+    },
+    "mcp-crawl4ai-rag": {
+      "command": "python",
+      "args": [
+        "C:\\MyProgram\\GitHub\\mcp-crawl4ai-rag\\server.py"
+      ],
+      "enable": true
+    },
+    "supabase-mcp": {
+      "command": "python",
+      "args": [
+        "C:\\MyProgram\\GitHub\\supabase-mcp\\server.py"
+      ],
+      "enable": true
+    },
+    "ottomator-agents": {
+      "command": "python",
+      "args": [
+        "C:\\MyProgram\\GitHub\\ottomator-agents\\server.py"
+      ],
+      "enable": true
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "enable": true
     }
   }
 } 

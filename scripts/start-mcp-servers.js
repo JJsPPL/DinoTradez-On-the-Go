@@ -1,114 +1,92 @@
-import { spawn } from 'cross-spawn';
-import { readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+const { spawn } = require('cross-spawn');
+const path = require('path');
+const fs = require('fs');
 
-// Get current directory
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Load MCP server configuration
+const configPath = path.join(process.cwd(), 'mcp_config.json');
+let config;
 
-// Path to the mcp_config.json file
-const configPath = resolve(__dirname, '../mcp_config.json');
+try {
+  const configData = fs.readFileSync(configPath, 'utf8');
+  config = JSON.parse(configData);
+  console.log(`Found ${Object.keys(config.mcpServers).length} servers in configuration`);
+} catch (error) {
+  console.error(`Error loading configuration: ${error.message}`);
+  process.exit(1);
+}
 
-// Server processes map
-const serverProcesses = new Map();
+// Store running server processes
+const servers = {};
 
 // Function to start a server
-function startServer(name, command, args) {
+function startServer(name, serverConfig) {
+  if (!serverConfig.enable) {
+    console.log(`Skipping disabled server: ${name}`);
+    return;
+  }
+
   console.log(`Starting server: ${name}`);
-  console.log(`Command: ${command} ${args.join(' ')}`);
-  
-  try {
-    const process = spawn(command, args, {
-      stdio: 'pipe',
-      shell: true
-    });
-    
-    serverProcesses.set(name, process);
-    
-    process.stdout.on('data', (data) => {
-      console.log(`[${name}] ${data}`);
-    });
-    
-    process.stderr.on('data', (data) => {
-      console.error(`[${name}] Error: ${data}`);
-    });
-    
-    process.on('close', (code) => {
-      console.log(`[${name}] Server exited with code ${code}`);
-      serverProcesses.delete(name);
-    });
-    
-    console.log(`[${name}] Server started with PID: ${process.pid}`);
-    return true;
-  } catch (error) {
-    console.error(`[${name}] Failed to start server: ${error.message}`);
-    return false;
+  console.log(`Command: ${serverConfig.command} ${serverConfig.args.join(' ')}`);
+
+  // Check if Python is set up properly
+  if (serverConfig.command === 'python') {
+    try {
+      // Modify paths to use local project directories instead of C:\MyProgram\GitHub
+      const pythonArgs = serverConfig.args.map(arg => {
+        if (arg.includes('C:\\MyProgram\\GitHub\\')) {
+          // Extract the server name from the path
+          const serverName = arg.split('\\').pop().split('.')[0];
+          // Use local ottomator-agents directory
+          return path.join(process.cwd(), 'ottomator-agents', serverName, 'server.py');
+        }
+        return arg;
+      });
+
+      // Start the server process
+      const proc = spawn(serverConfig.command, pythonArgs);
+      servers[name] = proc;
+
+      // Log process ID
+      console.log(`[${name}] Server started with PID: ${proc.pid}`);
+
+      // Handle server output
+      proc.stdout.on('data', (data) => {
+        console.log(`[${name}] ${data.toString().trim()}`);
+      });
+
+      proc.stderr.on('data', (data) => {
+        console.error(`[${name}] Error: ${data.toString().trim()}`);
+      });
+
+      // Handle server exit
+      proc.on('close', (code) => {
+        console.log(`[${name}] Server exited with code ${code}`);
+        delete servers[name];
+      });
+    } catch (error) {
+      console.error(`[${name}] Failed to start server: ${error.message}`);
+    }
   }
 }
 
-// Function to stop a server
-function stopServer(name) {
-  const process = serverProcesses.get(name);
-  if (process) {
-    console.log(`Stopping server: ${name}`);
-    process.kill();
-    serverProcesses.delete(name);
-    return true;
-  }
-  return false;
+// Start all the configured servers
+for (const [name, serverConfig] of Object.entries(config.mcpServers)) {
+  startServer(name, serverConfig);
 }
 
-// Function to stop all servers
-function stopAllServers() {
-  console.log('Stopping all servers...');
-  for (const [name] of serverProcesses) {
-    stopServer(name);
-  }
-}
+console.log(`All enabled servers started.`);
 
-// Handle process exit
+// Handle process termination
 process.on('SIGINT', () => {
-  console.log('Received SIGINT. Shutting down servers...');
-  stopAllServers();
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  console.log('Received SIGTERM. Shutting down servers...');
-  stopAllServers();
-  process.exit(0);
-});
-
-// Main function to start all servers
-async function main() {
-  try {
-    // Read and parse the configuration file
-    const config = JSON.parse(readFileSync(configPath, 'utf8'));
-    const { mcpServers } = config;
-    
-    if (!mcpServers) {
-      console.error('No MCP servers found in configuration');
-      process.exit(1);
-    }
-    
-    console.log(`Found ${Object.keys(mcpServers).length} servers in configuration`);
-    
-    // Start each enabled server
-    for (const [name, serverConfig] of Object.entries(mcpServers)) {
-      if (serverConfig.enable) {
-        startServer(name, serverConfig.command, serverConfig.args);
-      } else {
-        console.log(`Server ${name} is disabled. Skipping.`);
-      }
-    }
-    
-    console.log('All enabled servers started.');
-  } catch (error) {
-    console.error('Error starting servers:', error);
-    process.exit(1);
+  console.log('Shutting down all servers...');
+  
+  for (const [name, proc] of Object.entries(servers)) {
+    console.log(`Stopping ${name}...`);
+    proc.kill();
   }
-}
+  
+  process.exit(0);
+});
 
-// Run the main function
-main(); 
+// Keep the process running
+process.stdin.resume(); 
