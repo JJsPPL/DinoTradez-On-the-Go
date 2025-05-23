@@ -2,8 +2,10 @@
 import React from 'react';
 import Watchlists from '../components/Watchlists';
 import NewsSection from '../components/NewsSection';
+import { FC } from '../typescript-compat';
 
-const App: React.FC = () => {
+// Use the FC type from our compatibility layer
+const App: FC = () => {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto p-4">
