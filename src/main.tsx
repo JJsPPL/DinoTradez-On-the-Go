@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import App from './pages/App';
 import './styles.css';
-import './vite-node-compat'; // Import for TypeScript compatibility
+// Remove the import for vite-node-compat as it's causing issues
 
 // Get the base URL depending on the environment
 const baseUrl = import.meta.env.MODE === 'production' 
