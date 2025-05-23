@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,23 +47,10 @@
       color: #fff;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
-    
-    .matrix-rain {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
   <div id="root">
-    <!-- Matrix background canvas will be mounted here using JS -->
-    <canvas id="matrix-bg" class="matrix-rain"></canvas>
-    
     <div class="container mx-auto p-4 relative z-10">
       <header class="mb-6">
         <h1 class="text-3xl font-bold text-green-500">DinoTradez</h1>
@@ -90,53 +78,6 @@
   <script>
     // Set current year in footer
     document.getElementById('current-year').textContent = new Date().getFullYear();
-    
-    // Matrix background animation
-    (function initMatrixBackground() {
-      const canvas = document.getElementById('matrix-bg');
-      const ctx = canvas.getContext('2d');
-      
-      // Set canvas dimensions
-      function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      }
-      
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
-      
-      // Matrix rain effect
-      const fontSize = 14;
-      const columns = Math.floor(canvas.width / fontSize);
-      const drops = Array(columns).fill(0).map(() => Math.floor(Math.random() * canvas.height));
-      const chars = "01".split("");
-      
-      function draw() {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = "#0F0"; // Matrix green
-        ctx.font = `${fontSize}px monospace`;
-        
-        for (let i = 0; i < drops.length; i++) {
-          // Random character
-          const char = chars[Math.floor(Math.random() * chars.length)];
-          
-          // Draw the character
-          ctx.fillText(char, i * fontSize, drops[i] * fontSize);
-          
-          // Move drops down
-          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-            drops[i] = 0;
-          }
-          drops[i]++;
-        }
-        
-        requestAnimationFrame(draw);
-      }
-      
-      draw();
-    })();
     
     // Load DinoTradez app
     window.addEventListener('DOMContentLoaded', function() {

@@ -67,17 +67,5 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-  },
-  // Add optimizeDeps to help with TypeScript configuration
-  optimizeDeps: {
-    esbuildOptions: {
-      // Fix TypeScript references
-      tsconfigRaw: {
-        compilerOptions: {
-          moduleResolution: "node",
-          preserveSymlinks: true
-        }
-      }
-    }
   }
 }));
