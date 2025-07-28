@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchStockQuotes, convertToWatchlistItems, defaultWatchlists, WatchlistItem } from '../services/stockService';
+=======
+
+import React, { useState, useEffect } from 'react';
+import { fetchStockQuotes, convertToWatchlistItems, defaultWatchlists, WatchlistItem } from '@/services/stockService';
+>>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
 import WatchlistTable from './WatchlistTable';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -8,10 +14,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { toast } from 'sonner';
 
+<<<<<<< HEAD
 const UPDATE_INTERVAL = 10000; // Update every 10 seconds
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds
 
+=======
+>>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
 const Watchlists = () => {
   const [activeTab, setActiveTab] = useState<string>('dinosaurThemed');
   const [watchlists, setWatchlists] = useState<Record<string, WatchlistItem[]>>({
@@ -66,9 +75,10 @@ const Watchlists = () => {
     }
   }, [activeTab, retryCount]);
 
-  // Load initial data
+  // Load data when tab changes
   useEffect(() => {
     loadWatchlists();
+<<<<<<< HEAD
   }, [activeTab, loadWatchlists]);
 
   // Set up automatic updates
@@ -76,6 +86,16 @@ const Watchlists = () => {
     const intervalId = setInterval(loadWatchlists, UPDATE_INTERVAL);
     return () => clearInterval(intervalId);
   }, [loadWatchlists]);
+=======
+    
+    // Refresh every 60 seconds
+    const interval = setInterval(() => {
+      loadWatchlists();
+    }, 60000);
+    
+    return () => clearInterval(interval);
+  }, [activeTab]);
+>>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
 
   // Get filtered and sorted watchlist
   const filteredWatchlist = useMemo(() => {

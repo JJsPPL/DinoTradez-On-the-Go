@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-const RAPIDAPI_KEY = '48b0ef34e6msh9fe72fb5f0d3e4ap126332jsn1e6298c105ee';
-const RAPIDAPI_HOST = 'yahoo-finance127.p.rapidapi.com';
+// Finnhub.io API configuration
+const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY || 'demo';
+const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -15,23 +16,71 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const response = await fetch(
-      `https://${RAPIDAPI_HOST}/v1/finance/quote?symbols=${symbols}`,
-      {
-        headers: {
-          'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': RAPIDAPI_HOST,
-        },
+    const symbolArray = Array.isArray(symbols) ? symbols : symbols.toString().split(',');
+    
+    // Fetch current stock quotes from Finnhub
+    const quotePromises = symbolArray.map(async (symbol) => {
+      try {
+        const response = await fetch(
+          `${FINNHUB_BASE_URL}/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Finnhub API responded with status: ${response.status}`);
+        }
+
+        const quoteData = await response.json();
+        
+        // Also fetch company profile for additional info
+        const profileResponse = await fetch(
+          `${FINNHUB_BASE_URL}/stock/profile2?symbol=${symbol}&token=${FINNHUB_API_KEY}`
+        );
+        
+        let profileData = {};
+        if (profileResponse.ok) {
+          profileData = await profileResponse.json();
+        }
+
+        return {
+          symbol: symbol,
+          regularMarketPrice: quoteData.c || 0,
+          regularMarketChange: quoteData.d || 0,
+          regularMarketChangePercent: quoteData.dp || 0,
+          regularMarketTime: Math.floor(Date.now() / 1000),
+          shortName: profileData.name || symbol,
+          longName: profileData.finnhubIndustry || profileData.name || symbol
+        };
+      } catch (error) {
+        console.error(`Error fetching data for ${symbol}:`, error);
+        // Return fallback data
+        return {
+          symbol: symbol,
+          regularMarketPrice: 0,
+          regularMarketChange: 0,
+          regularMarketChangePercent: 0,
+          regularMarketTime: Math.floor(Date.now() / 1000),
+          shortName: symbol,
+          longName: symbol
+        };
       }
-    );
+    });
 
-    if (!response.ok) {
-      throw new Error(`API responded with status: ${response.status}`);
-    }
+    const results = await Promise.all(quotePromises);
+    
+    // Format response to match expected structure
+    const formattedData = {
+      quoteResponse: {
+        result: results
+      }
+    };
 
-    const data = await response.json();
-    res.setHeader('Cache-Control', 's-maxage=10');
-    res.status(200).json(data);
+    res.setHeader('Cache-Control', 's-maxage=300'); // Cache for 5 minutes
+    res.status(200).json(formattedData);
   } catch (error) {
     console.error('API Error:', error);
     res.status(500).json({ error: 'Failed to fetch stock data' });

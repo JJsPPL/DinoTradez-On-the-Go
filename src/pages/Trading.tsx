@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,8 @@ import APIKeyConfig from '@/components/APIKeyConfig';
 import { getRapidAPIKey } from '@/services/stockService';
 
 const Trading = () => {
+  const [hasApiKey, setHasApiKey] = useState<boolean>(!!getRapidAPIKey());
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -35,6 +38,10 @@ const Trading = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
+<<<<<<< HEAD
+=======
+              {hasApiKey ? (
+>>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
                 <Card className="mb-6">
                   <CardHeader>
                     <CardTitle>Market Trends</CardTitle>
@@ -46,6 +53,88 @@ const Trading = () => {
                     <Watchlists />
                   </CardContent>
                 </Card>
+<<<<<<< HEAD
+=======
+              ) : (
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle>API Configuration Required</CardTitle>
+                    <CardDescription>
+                      Please configure your RapidAPI key to view live market data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <APIKeyConfig onConfigured={() => setHasApiKey(true)} />
+                  </CardContent>
+                </Card>
+              )}
+              
+              <Tabs defaultValue="buy" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="buy">Buy</TabsTrigger>
+                  <TabsTrigger value="sell">Sell</TabsTrigger>
+                </TabsList>
+                <TabsContent value="buy" className="mt-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Buy Dino Assets</CardTitle>
+                      <CardDescription>
+                        Find and purchase new dino assets for your collection
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="bg-muted/50 p-4 rounded-md">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="font-medium">Rex Prime</h3>
+                              <p className="text-sm text-muted-foreground">Legendary Tyrannosaurus</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium">$28,500</p>
+                              <p className="text-sm text-green-600">+2.5% today</p>
+                            </div>
+                          </div>
+                          <Button className="mt-2 w-full sm:w-auto">Buy Now</Button>
+                        </div>
+                        
+                        <div className="bg-muted/50 p-4 rounded-md">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="font-medium">Velo Swift</h3>
+                              <p className="text-sm text-muted-foreground">Rare Velociraptor</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium">$12,750</p>
+                              <p className="text-sm text-muted-foreground">0% today</p>
+                            </div>
+                          </div>
+                          <Button className="mt-2 w-full sm:w-auto">Buy Now</Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                <TabsContent value="sell" className="mt-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Sell Dino Assets</CardTitle>
+                      <CardDescription>
+                        List your dino assets for sale on the marketplace
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="bg-muted/50 p-8 rounded-md text-center">
+                        <p className="text-muted-foreground">You don't have any dino assets to sell.</p>
+                        <Button variant="outline" className="mt-4" asChild>
+                          <Link to="/marketplace">Browse Marketplace</Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+>>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
             </div>
             
             <div className="lg:col-span-1">
