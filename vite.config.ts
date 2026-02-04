@@ -8,7 +8,7 @@ const RAPID_API_HOST = 'yahoo-finance127.p.rapidapi.com';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? '/DinoTradez-On-the-Go/' : '/',
+  base: '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
