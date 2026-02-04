@@ -21,20 +21,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
       - name: Setup Pages
         uses: actions/configure-pages@v4
+
+      - name: Copy static files to dist
+        run: |
+          mkdir -p dist
+          cp public/index.html dist/
+          cp public/script.js dist/
+          cp public/styles.css dist/
+          cp public/CNAME dist/
+          cp -r public/assets dist/ 2>/dev/null || true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
