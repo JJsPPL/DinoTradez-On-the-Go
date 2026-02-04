@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSmoothScrolling();
     initializeSearchFunctionality();
     initializeLiveMarketUpdates();
+    initializeMarketIntelligence(); // NEW: S-3 filings and Short Interest
     initializeShortInterestFilter();
     initializeResponsiveTables();
 });
@@ -226,6 +227,272 @@ function updateLastRefreshTime() {
         const now = new Date();
         timeDisplay.textContent = `Last updated: ${now.toLocaleTimeString()}`;
     }
+}
+
+// ========================================
+// MARKET INTELLIGENCE - SEC & SHORT INTEREST
+// ========================================
+
+// Initialize Market Intelligence Section
+function initializeMarketIntelligence() {
+    console.log('Initializing Market Intelligence...');
+
+    // Initial load
+    updateSECS3Filings();
+    updateShortInterestData();
+
+    // Update SEC filings every 10 minutes
+    setInterval(() => {
+        console.log('Refreshing SEC S-3 filings...');
+        updateSECS3Filings();
+    }, 600000);
+
+    // Update short interest every 5 minutes
+    setInterval(() => {
+        console.log('Refreshing short interest data...');
+        updateShortInterestData();
+    }, 300000);
+}
+
+// Fetch SEC S-3 Filings from EDGAR
+async function updateSECS3Filings() {
+    const filingsContainer = document.querySelector('.edgar-filings');
+    if (!filingsContainer) return;
+
+    try {
+        // SEC EDGAR API for recent S-3 filings
+        const response = await fetch(
+            'https://efts.sec.gov/LATEST/search-index?q=%22S-3%22&dateRange=custom&startdt=2024-01-01&forms=S-3,S-3ASR&size=10',
+            {
+                headers: {
+                    'User-Agent': 'DinoTradez contact@dinotradez.com',
+                    'Accept': 'application/json'
+                }
+            }
+        );
+
+        if (!response.ok) {
+            // Fallback: Use SEC RSS feed approach via proxy or direct fetch
+            await updateSECS3FilingsFallback();
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.hits && data.hits.hits && data.hits.hits.length > 0) {
+            renderS3Filings(data.hits.hits);
+        }
+    } catch (error) {
+        console.error('Error fetching SEC filings:', error);
+        // Use fallback method
+        await updateSECS3FilingsFallback();
+    }
+}
+
+// Fallback: Fetch S-3 filings using alternative method
+async function updateSECS3FilingsFallback() {
+    const filingsContainer = document.querySelector('.edgar-filings');
+    if (!filingsContainer) return;
+
+    // Stocks known to have recent S-3 filings - fetch their SEC data
+    const stocksToCheck = ['PLTR', 'SOFI', 'LCID', 'RIVN', 'NIO', 'MARA', 'RIOT', 'COIN', 'HOOD', 'AFRM'];
+    const filings = [];
+
+    for (const symbol of stocksToCheck.slice(0, 5)) {
+        try {
+            const response = await fetch(
+                `${RAPIDAPI_BASE_URL}/markets/stock/modules?ticker=${symbol}&module=sec-filings`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'X-RapidAPI-Key': RAPIDAPI_KEY,
+                        'X-RapidAPI-Host': RAPIDAPI_HOST
+                    }
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.body && data.body.filings) {
+                    // Find S-3 filings
+                    const s3Filings = data.body.filings.filter(f =>
+                        f.type && (f.type.includes('S-3') || f.type.includes('S-3ASR'))
+                    ).slice(0, 2);
+
+                    for (const filing of s3Filings) {
+                        filings.push({
+                            symbol: symbol,
+                            company: data.body.companyName || symbol,
+                            type: filing.type,
+                            date: filing.date,
+                            url: filing.edgarUrl || `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${symbol}&type=S-3`
+                        });
+                    }
+                }
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 300));
+        } catch (error) {
+            console.error(`Error fetching SEC data for ${symbol}:`, error);
+        }
+    }
+
+    if (filings.length > 0) {
+        renderS3FilingsFromData(filings);
+    }
+}
+
+// Render S-3 filings in the UI
+function renderS3FilingsFromData(filings) {
+    const filingsContainer = document.querySelector('.edgar-filings');
+    if (!filingsContainer) return;
+
+    filingsContainer.innerHTML = filings.slice(0, 5).map(filing => `
+        <div class="filing-item">
+            <div class="filing-company">${filing.company} (${filing.symbol})</div>
+            <div class="filing-details">
+                <div class="filing-type">${filing.type}</div>
+                <div class="filing-date">${filing.date || 'Recent'}</div>
+            </div>
+            <a href="${filing.url}" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
+        </div>
+    `).join('');
+}
+
+// Render S-3 filings from SEC API response
+function renderS3Filings(hits) {
+    const filingsContainer = document.querySelector('.edgar-filings');
+    if (!filingsContainer) return;
+
+    filingsContainer.innerHTML = hits.slice(0, 5).map(hit => {
+        const source = hit._source;
+        return `
+            <div class="filing-item">
+                <div class="filing-company">${source.display_names?.[0] || source.company || 'Unknown'} (${source.tickers?.[0] || 'N/A'})</div>
+                <div class="filing-details">
+                    <div class="filing-type">${source.form || 'S-3'}</div>
+                    <div class="filing-date">${source.file_date || 'Recent'}</div>
+                </div>
+                <a href="https://www.sec.gov/Archives/edgar/data/${source.ciks?.[0]}/${source.adsh?.replace(/-/g, '')}/${source.adsh}-index.htm" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
+            </div>
+        `;
+    }).join('');
+}
+
+// Update Short Interest Data
+async function updateShortInterestData() {
+    const shortInterestContainer = document.querySelector('.short-interest-data');
+    if (!shortInterestContainer) return;
+
+    // High short interest stocks to monitor
+    const shortInterestStocks = ['GME', 'AMC', 'BBBY', 'KOSS', 'CVNA', 'BYND', 'UPST', 'LCID', 'RIVN', 'FFIE'];
+    const shortData = [];
+
+    for (const symbol of shortInterestStocks) {
+        try {
+            // Fetch key statistics which includes short interest
+            const response = await fetch(
+                `${RAPIDAPI_BASE_URL}/markets/stock/modules?ticker=${symbol}&module=key-statistics`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'X-RapidAPI-Key': RAPIDAPI_KEY,
+                        'X-RapidAPI-Host': RAPIDAPI_HOST
+                    }
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.body) {
+                    const stats = data.body;
+
+                    // Also get quote for price change
+                    const quote = await fetchStockQuote(symbol);
+
+                    const shortPercent = stats.shortPercentOfFloat?.raw ||
+                                        stats.shortRatio?.raw ||
+                                        stats.sharesShort?.raw / stats.floatShares?.raw * 100 || 0;
+
+                    const percentChange = quote?.percentChange || 0;
+                    const volume = quote?.volume || stats.averageVolume?.raw || 0;
+
+                    // Check if it's a "lotto" pick (-90% to -99% from 52-week high)
+                    const currentPrice = quote?.price || 0;
+                    const weekHigh52 = stats['52WeekHigh']?.raw || stats.fiftyTwoWeekHigh?.raw || currentPrice;
+                    const dropFrom52High = weekHigh52 > 0 ? ((currentPrice - weekHigh52) / weekHigh52 * 100) : 0;
+                    const isLotto = dropFrom52High <= -70; // 70%+ drop from high
+
+                    if (shortPercent > 5 || volume > 1000000) {
+                        shortData.push({
+                            symbol: symbol,
+                            shortPercent: shortPercent,
+                            percentChange: percentChange,
+                            volume: volume,
+                            isLotto: isLotto,
+                            dropFromHigh: dropFrom52High
+                        });
+                    }
+                }
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 400));
+        } catch (error) {
+            console.error(`Error fetching short interest for ${symbol}:`, error);
+        }
+    }
+
+    // Sort by short percent
+    shortData.sort((a, b) => b.shortPercent - a.shortPercent);
+
+    if (shortData.length > 0) {
+        renderShortInterestData(shortData);
+    }
+}
+
+// Render Short Interest Data
+function renderShortInterestData(data) {
+    const container = document.querySelector('.short-interest-data');
+    if (!container) return;
+
+    // Keep header, replace items
+    const header = container.querySelector('.short-interest-header');
+    const headerHTML = header ? header.outerHTML : `
+        <div class="short-interest-header">
+            <div class="short-column">Symbol</div>
+            <div class="short-column">Short %</div>
+            <div class="short-column">Change</div>
+            <div class="short-column">Volume</div>
+        </div>
+    `;
+
+    const itemsHTML = data.slice(0, 5).map(item => {
+        const isPositive = item.percentChange >= 0;
+        const shortWarning = item.shortPercent > 15 ? 'warning' : '';
+        const lottoClass = item.isLotto ? 'lotto' : '';
+
+        return `
+            <div class="short-interest-item ${lottoClass}">
+                <div class="short-column">${item.symbol}</div>
+                <div class="short-column ${shortWarning}">${item.shortPercent.toFixed(2)}%</div>
+                <div class="short-column ${isPositive ? 'positive' : 'negative'}">${isPositive ? '+' : ''}${item.percentChange.toFixed(2)}%</div>
+                <div class="short-column">${formatVolume(item.volume)}</div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = headerHTML + itemsHTML;
+
+    // Re-apply filters
+    initializeShortInterestFilter();
+}
+
+// Format volume for display
+function formatVolume(vol) {
+    if (vol >= 1e9) return (vol / 1e9).toFixed(1) + 'B';
+    if (vol >= 1e6) return (vol / 1e6).toFixed(1) + 'M';
+    if (vol >= 1e3) return (vol / 1e3).toFixed(1) + 'K';
+    return vol.toString();
 }
 
 // Mobile Navigation
