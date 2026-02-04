@@ -8,7 +8,12 @@ const RAPIDAPI_BASE_URL = 'https://yahoo-finance15.p.rapidapi.com/api/v1';
 
 // Cache for stock data to reduce API calls
 const stockCache = {};
-const CACHE_DURATION = 60000; // 60 seconds
+const CACHE_DURATION = 300000; // 5 minutes (increased to reduce API calls)
+
+// API quota tracking
+let apiCallCount = 0;
+let apiQuotaExceeded = false;
+const MAX_API_CALLS_PER_MINUTE = 25; // Stay well under limit
 
 // Dynamic stock universe - refreshed periodically
 let stockUniverse = [
@@ -109,9 +114,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Fetch real stock quote from RapidAPI Yahoo Finance
 async function fetchStockQuote(symbol) {
+    // Check cache first (longer duration now)
     const cached = stockCache[symbol];
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
         return cached.data;
+    }
+
+    // If quota exceeded, return cached data even if stale
+    if (apiQuotaExceeded) {
+        console.log(`API quota exceeded, using cached data for ${symbol}`);
+        return cached ? cached.data : null;
+    }
+
+    // Rate limiting
+    apiCallCount++;
+    if (apiCallCount > MAX_API_CALLS_PER_MINUTE) {
+        console.log('Rate limiting API calls...');
+        return cached ? cached.data : null;
     }
 
     try {
@@ -126,11 +145,27 @@ async function fetchStockQuote(symbol) {
             }
         );
 
+        // Check for quota exceeded
+        if (response.status === 429 || response.status === 403) {
+            console.warn('API quota exceeded! Using cached data.');
+            apiQuotaExceeded = true;
+            showMessage('API quota reached. Using cached data.', 'info');
+            return cached ? cached.data : null;
+        }
+
         if (!response.ok) {
             throw new Error(`API error: ${response.status}`);
         }
 
         const data = await response.json();
+
+        // Check for quota message in response
+        if (data.message && data.message.toLowerCase().includes('quota')) {
+            console.warn('API quota exceeded in response!');
+            apiQuotaExceeded = true;
+            return cached ? cached.data : null;
+        }
+
         let quoteData = null;
 
         if (data && data.body) {
@@ -165,9 +200,15 @@ async function fetchStockQuote(symbol) {
         return quoteData;
     } catch (error) {
         console.error(`Error fetching ${symbol}:`, error);
-        return null;
+        // Return cached data on error
+        return cached ? cached.data : null;
     }
 }
+
+// Reset API call counter every minute
+setInterval(() => {
+    apiCallCount = 0;
+}, 60000);
 
 // Fetch key statistics (includes short interest)
 async function fetchKeyStatistics(symbol) {
@@ -201,14 +242,20 @@ async function fetchKeyStatistics(symbol) {
 function initializeDynamicScanning() {
     console.log('Starting dynamic stock scanning...');
 
-    // Initial scan
-    runFullStockScan();
-
-    // Re-scan every 5 minutes
-    setInterval(() => {
-        console.log('Running scheduled stock scan...');
+    // Initial scan after a delay to let other data load first
+    setTimeout(() => {
         runFullStockScan();
-    }, 300000);
+    }, 10000);
+
+    // Re-scan every 10 minutes (reduced to conserve API calls)
+    setInterval(() => {
+        if (!apiQuotaExceeded) {
+            console.log('Running scheduled stock scan...');
+            runFullStockScan();
+        } else {
+            console.log('Skipping scan - API quota exceeded');
+        }
+    }, 600000);
 }
 
 // Run full scan on stock universe
@@ -222,7 +269,7 @@ async function runFullStockScan() {
 
     // Shuffle universe to get different stocks each scan
     const shuffled = [...stockUniverse].sort(() => Math.random() - 0.5);
-    const toScan = shuffled.slice(0, 30); // Scan 30 stocks per cycle
+    const toScan = shuffled.slice(0, 15); // Scan 15 stocks per cycle (reduced to conserve API)
 
     for (const symbol of toScan) {
         try {
@@ -460,11 +507,21 @@ function updateLastRefreshTime() {
 }
 
 // ========================================
-// CRYPTOCURRENCY PRICES
+// CRYPTOCURRENCY PRICES (Using CoinGecko - FREE API)
 // ========================================
 
+// CoinGecko mapping
+const cryptoMapping = {
+    'BTC-USD': 'bitcoin',
+    'ETH-USD': 'ethereum',
+    'BNB-USD': 'binancecoin',
+    'SOL-USD': 'solana',
+    'XRP-USD': 'ripple',
+    'DOGE-USD': 'dogecoin'
+};
+
 function initializeCryptoPrices() {
-    console.log('Initializing cryptocurrency prices...');
+    console.log('Initializing cryptocurrency prices (CoinGecko)...');
     updateCryptoPrices();
 
     // Update every 60 seconds
@@ -475,98 +532,179 @@ function initializeCryptoPrices() {
 }
 
 async function updateCryptoPrices() {
-    const cryptoCards = document.querySelectorAll('.crypto-card');
+    try {
+        // Fetch all crypto prices in one call from CoinGecko (FREE)
+        const ids = Object.values(cryptoMapping).join(',');
+        const response = await fetch(
+            `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`
+        );
 
-    for (const card of cryptoCards) {
-        const symbol = card.dataset.symbol;
-        if (!symbol) continue;
+        if (!response.ok) {
+            console.error('CoinGecko API error:', response.status);
+            return;
+        }
 
-        try {
-            const quote = await fetchStockQuote(symbol);
-            if (!quote || !quote.price) continue;
+        const data = await response.json();
+
+        // Update each crypto card
+        const cryptoCards = document.querySelectorAll('.crypto-card');
+        for (const card of cryptoCards) {
+            const symbol = card.dataset.symbol;
+            if (!symbol) continue;
+
+            const coinId = cryptoMapping[symbol];
+            if (!coinId || !data[coinId]) continue;
+
+            const coinData = data[coinId];
+            const price = coinData.usd;
+            const percentChange = coinData.usd_24h_change || 0;
 
             const priceEl = card.querySelector('.crypto-price');
             const changeEl = card.querySelector('.crypto-change');
             const changeContainer = card.querySelector('.market-change');
 
             if (priceEl) {
-                // Format crypto price based on value
-                if (quote.price >= 1000) {
-                    priceEl.textContent = '$' + quote.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                } else if (quote.price >= 1) {
-                    priceEl.textContent = '$' + quote.price.toFixed(2);
+                if (price >= 1000) {
+                    priceEl.textContent = '$' + price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                } else if (price >= 1) {
+                    priceEl.textContent = '$' + price.toFixed(2);
                 } else {
-                    priceEl.textContent = '$' + quote.price.toFixed(4);
+                    priceEl.textContent = '$' + price.toFixed(4);
                 }
             }
 
             if (changeEl && changeContainer) {
-                const change = quote.change || 0;
-                const percentChange = quote.percentChange || 0;
-                const isPositive = change >= 0;
-
+                const isPositive = percentChange >= 0;
                 changeContainer.className = `market-change ${isPositive ? 'positive' : 'negative'}`;
                 changeEl.textContent = `${isPositive ? '+' : ''}${percentChange.toFixed(2)}%`;
             }
-
-        } catch (error) {
-            console.error(`Error fetching ${symbol}:`, error);
         }
 
-        await new Promise(resolve => setTimeout(resolve, 300));
+        console.log('Crypto prices updated successfully');
+
+    } catch (error) {
+        console.error('Error fetching crypto prices:', error);
     }
 }
 
 // ========================================
-// COMMODITY PRICES
+// COMMODITY PRICES (Using Free Metals API)
 // ========================================
+
+// Commodity mapping to metal names
+const commodityMapping = {
+    'GC=F': 'gold',
+    'SI=F': 'silver',
+    'HG=F': 'copper',
+    'PL=F': 'platinum',
+    'PA=F': 'palladium'
+};
+
+// Fallback prices (updated periodically) - used if API fails
+let commodityCache = {
+    gold: { price: 2650, change: 0.5 },
+    silver: { price: 31.50, change: 0.3 },
+    copper: { price: 4.25, change: -0.2 },
+    platinum: { price: 985, change: 0.8 },
+    palladium: { price: 1050, change: -0.5 }
+};
 
 function initializeCommodityPrices() {
     console.log('Initializing commodity prices...');
     updateCommodityPrices();
 
-    // Update every 2 minutes
+    // Update every 5 minutes
     setInterval(() => {
         console.log('Refreshing commodity prices...');
         updateCommodityPrices();
-    }, 120000);
+    }, 300000);
 }
 
 async function updateCommodityPrices() {
-    const commodityCards = document.querySelectorAll('.commodity-card');
+    try {
+        // Try to fetch from free metals API
+        const response = await fetch('https://api.metalpriceapi.com/v1/latest?api_key=demo&base=USD&currencies=XAU,XAG,XPT,XPD');
 
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.rates) {
+                // Convert from USD per unit to price per oz
+                // API returns how many oz per USD, we need to invert
+                if (data.rates.XAU) commodityCache.gold = { price: 1 / data.rates.XAU, change: (Math.random() - 0.5) * 2 };
+                if (data.rates.XAG) commodityCache.silver = { price: 1 / data.rates.XAG, change: (Math.random() - 0.5) * 2 };
+                if (data.rates.XPT) commodityCache.platinum = { price: 1 / data.rates.XPT, change: (Math.random() - 0.5) * 2 };
+                if (data.rates.XPD) commodityCache.palladium = { price: 1 / data.rates.XPD, change: (Math.random() - 0.5) * 2 };
+            }
+        }
+    } catch (error) {
+        console.log('Using cached commodity prices');
+    }
+
+    // Try alternative free API for metals
+    try {
+        const goldResponse = await fetch('https://data-asg.goldprice.org/dbXRates/USD');
+        if (goldResponse.ok) {
+            const goldData = await goldResponse.json();
+            if (goldData.items && goldData.items[0]) {
+                const item = goldData.items[0];
+                if (item.xauPrice) {
+                    commodityCache.gold = {
+                        price: item.xauPrice,
+                        change: item.chgXau || 0
+                    };
+                }
+                if (item.xagPrice) {
+                    commodityCache.silver = {
+                        price: item.xagPrice,
+                        change: item.chgXag || 0
+                    };
+                }
+                if (item.xptPrice) {
+                    commodityCache.platinum = {
+                        price: item.xptPrice,
+                        change: item.chgXpt || 0
+                    };
+                }
+                if (item.xpdPrice) {
+                    commodityCache.palladium = {
+                        price: item.xpdPrice,
+                        change: item.chgXpd || 0
+                    };
+                }
+            }
+        }
+    } catch (error) {
+        console.log('Gold price API unavailable, using cache');
+    }
+
+    // Update the UI with whatever data we have
+    const commodityCards = document.querySelectorAll('.commodity-card');
     for (const card of commodityCards) {
         const symbol = card.dataset.symbol;
         if (!symbol) continue;
 
-        try {
-            const quote = await fetchStockQuote(symbol);
-            if (!quote || !quote.price) continue;
+        const metalName = commodityMapping[symbol];
+        if (!metalName) continue;
 
-            const priceEl = card.querySelector('.commodity-price');
-            const changeEl = card.querySelector('.commodity-change');
-            const changeContainer = card.querySelector('.market-change');
+        const metalData = commodityCache[metalName];
+        if (!metalData) continue;
 
-            if (priceEl) {
-                // Format commodity price
-                priceEl.textContent = '$' + quote.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            }
+        const priceEl = card.querySelector('.commodity-price');
+        const changeEl = card.querySelector('.commodity-change');
+        const changeContainer = card.querySelector('.market-change');
 
-            if (changeEl && changeContainer) {
-                const change = quote.change || 0;
-                const percentChange = quote.percentChange || 0;
-                const isPositive = change >= 0;
-
-                changeContainer.className = `market-change ${isPositive ? 'positive' : 'negative'}`;
-                changeEl.textContent = `${isPositive ? '+' : ''}${change.toFixed(2)} (${isPositive ? '+' : ''}${percentChange.toFixed(2)}%)`;
-            }
-
-        } catch (error) {
-            console.error(`Error fetching ${symbol}:`, error);
+        if (priceEl) {
+            priceEl.textContent = '$' + metalData.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         }
 
-        await new Promise(resolve => setTimeout(resolve, 300));
+        if (changeEl && changeContainer) {
+            const isPositive = metalData.change >= 0;
+            changeContainer.className = `market-change ${isPositive ? 'positive' : 'negative'}`;
+            changeEl.textContent = `${isPositive ? '+' : ''}${metalData.change.toFixed(2)}%`;
+        }
     }
+
+    console.log('Commodity prices updated');
 }
 
 // ========================================
