@@ -1,11 +1,5 @@
-<<<<<<< HEAD
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchStockQuotes, convertToWatchlistItems, defaultWatchlists, WatchlistItem } from '../services/stockService';
-=======
-
-import React, { useState, useEffect } from 'react';
-import { fetchStockQuotes, convertToWatchlistItems, defaultWatchlists, WatchlistItem } from '@/services/stockService';
->>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
 import WatchlistTable from './WatchlistTable';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -14,13 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { toast } from 'sonner';
 
-<<<<<<< HEAD
 const UPDATE_INTERVAL = 10000; // Update every 10 seconds
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds
 
-=======
->>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
 const Watchlists = () => {
   const [activeTab, setActiveTab] = useState<string>('dinosaurThemed');
   const [watchlists, setWatchlists] = useState<Record<string, WatchlistItem[]>>({
@@ -45,7 +36,7 @@ const Watchlists = () => {
     try {
       const symbols = defaultWatchlists[activeTab as keyof typeof defaultWatchlists];
       const quotes = await fetchStockQuotes(symbols);
-      
+
       if (quotes.length > 0) {
         setWatchlists(prev => ({
           ...prev,
@@ -78,7 +69,6 @@ const Watchlists = () => {
   // Load data when tab changes
   useEffect(() => {
     loadWatchlists();
-<<<<<<< HEAD
   }, [activeTab, loadWatchlists]);
 
   // Set up automatic updates
@@ -86,31 +76,21 @@ const Watchlists = () => {
     const intervalId = setInterval(loadWatchlists, UPDATE_INTERVAL);
     return () => clearInterval(intervalId);
   }, [loadWatchlists]);
-=======
-    
-    // Refresh every 60 seconds
-    const interval = setInterval(() => {
-      loadWatchlists();
-    }, 60000);
-    
-    return () => clearInterval(interval);
-  }, [activeTab]);
->>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
 
   // Get filtered and sorted watchlist
   const filteredWatchlist = useMemo(() => {
     const currentWatchlist = watchlists[activeTab] || [];
-    
+
     // Apply filter
     let result = currentWatchlist;
     if (filter) {
       const lowerFilter = filter.toLowerCase();
-      result = result.filter(item => 
-        item.symbol.toLowerCase().includes(lowerFilter) || 
+      result = result.filter(item =>
+        item.symbol.toLowerCase().includes(lowerFilter) ||
         item.name.toLowerCase().includes(lowerFilter)
       );
     }
-    
+
     // Apply sorting
     result = [...result].sort((a, b) => {
       let comparison = 0;
@@ -133,10 +113,10 @@ const Watchlists = () => {
         default:
           comparison = 0;
       }
-      
+
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-    
+
     return result;
   }, [watchlists, activeTab, filter, sortOption, sortDirection]);
 
@@ -153,13 +133,13 @@ const Watchlists = () => {
           <span className="text-sm text-gray-400">
             {lastUpdated ? `Last updated: ${lastUpdated.toLocaleTimeString()}` : 'Not updated yet'}
           </span>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant="outline"
             onClick={() => {
               setRetryCount(0);
               loadWatchlists();
-            }} 
+            }}
             disabled={isLoading}
             className="bg-transparent text-green-400 border-green-500 hover:bg-green-900/20"
           >
@@ -167,7 +147,7 @@ const Watchlists = () => {
           </Button>
         </div>
       </div>
-      
+
       <div className="bg-black border border-gray-800 rounded-lg p-4">
         <Tabs defaultValue="dinosaurThemed" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-7 mb-4 bg-gray-900">
@@ -179,13 +159,13 @@ const Watchlists = () => {
             <TabsTrigger value="crypto">Crypto</TabsTrigger>
             <TabsTrigger value="indices">Indices</TabsTrigger>
           </TabsList>
-          
+
           <div className="flex flex-wrap gap-4 mb-4">
             <div className="flex-1 min-w-[200px]">
-              <Input 
-                placeholder="Filter by symbol or name" 
-                value={filter} 
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilter(e.target.value)} 
+              <Input
+                placeholder="Filter by symbol or name"
+                value={filter}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilter(e.target.value)}
                 className="bg-gray-900 border-gray-800 text-white"
               />
             </div>
@@ -202,8 +182,8 @@ const Watchlists = () => {
                   <SelectItem value="changePercent">Change %</SelectItem>
                 </SelectContent>
               </Select>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={toggleSortDirection}
                 className="bg-gray-900 border-gray-800 text-white w-10 h-10 p-0"
               >
@@ -211,15 +191,15 @@ const Watchlists = () => {
               </Button>
             </div>
           </div>
-          
+
           {Object.entries(defaultWatchlists).map(([key, _]) => (
             <TabsContent key={key} value={key} className="space-y-4">
-              <WatchlistTable 
+              <WatchlistTable
                 title={`${key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')} Stocks`}
                 items={key === activeTab ? filteredWatchlist : []}
-                isLoading={isLoading && activeTab === key} 
+                isLoading={isLoading && activeTab === key}
               />
-              
+
               {key === activeTab && filteredWatchlist.length > 0 && (
                 <div className="mt-6 bg-black border border-gray-800 rounded-lg p-4">
                   <h3 className="text-lg font-medium mb-2 text-white">Price Trend</h3>

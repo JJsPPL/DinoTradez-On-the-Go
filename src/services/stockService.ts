@@ -21,8 +21,6 @@ export interface WatchlistItem {
   lastUpdated: Date;
 }
 
-<<<<<<< HEAD
-=======
 export interface StockPrice {
   symbol: string;
   name: string;
@@ -32,64 +30,15 @@ export interface StockPrice {
   lastUpdated: Date;
 }
 
->>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
 // Finnhub.io API configuration
-const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY || 'demo';
+const FINNHUB_API_KEY = import.meta.env.VITE_FINNHUB_API_KEY || 'demo';
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
 
-<<<<<<< HEAD
-export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]> => {
-  try {
-    console.log('Fetching stock quotes for symbols:', symbols.join(','));
-    
-    // Always use mock data when testing in development
-    if (process.env.NODE_ENV === 'development' && process.env.VITE_USE_MOCK === 'true') {
-      console.log('Using mock data for development');
-      return symbols.map(symbol => createMockStockQuote(symbol));
-    }
-    
-    // In production, we'll fetch real data directly from the API
-    try {
-      const response = await fetch(`${YAHOO_FINANCE_API}?symbols=${symbols.join(',')}`, {
-        method: 'GET',
-        headers: {
-          'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': RAPIDAPI_HOST,
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (!data || !Array.isArray(data.quoteResponse?.result)) {
-        throw new Error('Invalid API response format');
-      }
-      
-      return data.quoteResponse.result.map((item: any) => ({
-        symbol: item.symbol,
-        regularMarketPrice: item.regularMarketPrice,
-        regularMarketChange: item.regularMarketChange,
-        regularMarketChangePercent: item.regularMarketChangePercent,
-        regularMarketTime: item.regularMarketTime || Math.floor(Date.now() / 1000),
-        shortName: item.shortName || item.symbol,
-        longName: item.longName
-      }));
-    } catch (error) {
-      console.error('Error fetching from API:', error);
-      // Fall back to mock data on error
-      console.log('Falling back to mock data due to API error');
-      return symbols.map(symbol => createMockStockQuote(symbol));
-    }
-  } catch (error) {
-    console.error('Error fetching stock quotes:', error);
-    
-    toast(`Failed to fetch stock data: ${error instanceof Error ? error.message : "Unknown error"}. Using backup data.`);
-    
-    // Return mock data as fallback
-=======
+// RapidAPI configuration (optional fallback)
+const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY || '';
+const RAPIDAPI_HOST = import.meta.env.VITE_RAPIDAPI_HOST || 'yahoo-finance15.p.rapidapi.com';
+const YAHOO_FINANCE_API = `https://${RAPIDAPI_HOST}/api/v1/markets/stock/quotes`;
+
 /**
  * StockService class - Handles fetching current stock data
  */
@@ -102,13 +51,13 @@ export class StockService {
   async getCurrentPrices(symbols: string[]): Promise<StockPrice[]> {
     try {
       console.log('Fetching stock quotes for symbols:', symbols.join(','));
-      
+
       // Always use mock data when testing in development
       if (import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true') {
         console.log('Using mock data for development');
         return symbols.map(symbol => this.getMockStockPrice(symbol));
       }
-      
+
       // In production, we'll fetch real data directly from the API
       try {
         const response = await fetch(`${YAHOO_FINANCE_API}?symbols=${symbols.join(',')}`, {
@@ -118,17 +67,17 @@ export class StockService {
             'X-RapidAPI-Host': RAPIDAPI_HOST,
           },
         });
-        
+
         if (!response.ok) {
           throw new Error(`API request failed with status ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (!data || !Array.isArray(data.quoteResponse?.result)) {
           throw new Error('Invalid API response format');
         }
-        
+
         return data.quoteResponse.result.map((item: any) => ({
           symbol: item.symbol,
           name: item.shortName || item.symbol,
@@ -145,14 +94,14 @@ export class StockService {
       }
     } catch (error) {
       console.error('Error fetching stock quotes:', error);
-      
+
       toast(`Failed to fetch stock data: ${error instanceof Error ? error.message : "Unknown error"}. Using backup data.`);
-      
+
       // Return mock data as fallback
       return symbols.map(symbol => this.getMockStockPrice(symbol));
     }
   }
-  
+
   /**
    * Get historical stock data
    * @param symbol Stock symbol
@@ -169,7 +118,7 @@ export class StockService {
       return [];
     }
   }
-  
+
   /**
    * Helper function to create mock data for development
    * Made public to fix TypeScript error with legacy functions
@@ -188,10 +137,10 @@ export class StockService {
       'AMZN': { name: 'Amazon.com Inc.', price: 187.24, change: 2.34, changePercent: 1.26 },
       'NVDA': { name: 'NVIDIA Corp', price: 968.31, change: 15.42, changePercent: 1.62 }
     };
-    
+
     // If we don't have mock data for this symbol, generate some
     let basePrice = 0;
-    
+
     // Generate somewhat realistic prices based on the symbol if not in our predefined list
     if (!stockData[symbol]) {
       if (symbol.includes('BTC')) {
@@ -215,9 +164,9 @@ export class StockService {
       } else {
         basePrice = 20 + Math.random() * 180;
       }
-      
+
       const change = (Math.random() * 2 - 1) * basePrice * 0.05; // +/- 5% change
-      
+
       stockData[symbol] = {
         name: `${symbol.replace('-USD', '').replace('^', '')} ${this.getSymbolType(symbol)}`,
         price: parseFloat(basePrice.toFixed(2)),
@@ -225,7 +174,7 @@ export class StockService {
         changePercent: parseFloat(((change / basePrice) * 100).toFixed(2))
       };
     }
-    
+
     return {
       symbol,
       name: stockData[symbol].name,
@@ -235,7 +184,7 @@ export class StockService {
       lastUpdated: new Date()
     };
   }
-  
+
   private getSymbolType(symbol: string): string {
     if (symbol.includes('-USD')) return 'Crypto';
     if (symbol.startsWith('^')) return 'Index';
@@ -254,7 +203,7 @@ export class StockService {
     const data = [];
     const endDate = new Date();
     let currentPrice = 1000; // Default starting price
-    
+
     // For some known symbols, start with realistic prices
     if (symbol === 'AAPL') currentPrice = 211.25;
     if (symbol === 'MSFT') currentPrice = 434.12;
@@ -263,25 +212,25 @@ export class StockService {
     if (symbol === 'NVDA') currentPrice = 968.31;
     if (symbol === 'BTC-USD') currentPrice = 104840.26;
     if (symbol === 'ETH-USD') currentPrice = 3407.85;
-    
+
     for (let i = days; i >= 0; i--) {
       const date = new Date();
       date.setDate(endDate.getDate() - i);
-      
+
       // Simulate daily price movement
       const dailyChange = (Math.random() - 0.5) * (currentPrice * 0.03); // Max 3% daily move
       currentPrice += dailyChange;
-      
+
       // Ensure price doesn't go negative
       if (currentPrice < 1) currentPrice = 1;
-      
+
       data.push({
         date: date.toISOString().split('T')[0],
         price: parseFloat(currentPrice.toFixed(2)),
         volume: Math.floor(Math.random() * 10000000) + 1000000
       });
     }
-    
+
     return data;
   }
 }
@@ -291,7 +240,7 @@ export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]>
   const stockService = new StockService();
   try {
     const prices = await stockService.getCurrentPrices(symbols);
-    
+
     // Convert to the old format for backward compatibility
     return prices.map(price => ({
       symbol: price.symbol,
@@ -304,53 +253,15 @@ export const fetchStockQuotes = async (symbols: string[]): Promise<StockQuote[]>
     }));
   } catch (error) {
     console.error('Error in legacy fetchStockQuotes:', error);
->>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
     return symbols.map(symbol => createMockStockQuote(symbol));
   }
 };
 
 // Legacy helper function for backward compatibility
 const createMockStockQuote = (symbol: string): StockQuote => {
-<<<<<<< HEAD
-  let basePrice = 0;
-  
-  // Generate somewhat realistic prices based on the symbol
-  if (symbol.includes('BTC')) {
-    basePrice = 40000 + Math.random() * 5000;
-  } else if (symbol.includes('ETH')) {
-    basePrice = 2500 + Math.random() * 300;
-  } else if (['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META'].includes(symbol)) {
-    basePrice = 200 + Math.random() * 300;
-  } else if (symbol.startsWith('^')) {
-    if (symbol === '^DJI') {
-      basePrice = 35000 + Math.random() * 1000;
-    } else if (symbol === '^GSPC') {
-      basePrice = 4500 + Math.random() * 200;
-    } else if (symbol === '^IXIC') {
-      basePrice = 14000 + Math.random() * 500;
-    } else if (symbol === '^VIX') {
-      basePrice = 15 + Math.random() * 10;
-    } else {
-      basePrice = 1000 + Math.random() * 200;
-    }
-  } else {
-    basePrice = 20 + Math.random() * 180;
-  }
-  
-  const change = (Math.random() * 2 - 1) * basePrice * 0.05; // +/- 5% change
-  
-  return {
-    symbol,
-    regularMarketPrice: parseFloat(basePrice.toFixed(2)),
-    regularMarketChange: parseFloat(change.toFixed(2)),
-    regularMarketChangePercent: parseFloat(((change / basePrice) * 100).toFixed(2)),
-    regularMarketTime: Math.floor(Date.now() / 1000),
-    shortName: `${symbol.replace('-USD', '').replace('^', '')} ${getSymbolType(symbol)}`,
-    longName: `${symbol.replace('-USD', '').replace('^', '')} ${getSymbolFullType(symbol)}`
-=======
   const stockService = new StockService();
   const mockPrice = stockService.getMockStockPrice(symbol);
-  
+
   return {
     symbol: mockPrice.symbol,
     regularMarketPrice: mockPrice.price,
@@ -359,7 +270,6 @@ const createMockStockQuote = (symbol: string): StockQuote => {
     regularMarketTime: Math.floor(Date.now() / 1000),
     shortName: mockPrice.name,
     longName: mockPrice.name
->>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
   };
 };
 

@@ -35,13 +35,10 @@ const Trading = () => {
       <main className="flex-1">
         <div className="container px-4 mx-auto py-8">
           <h1 className="text-3xl font-bold mb-6">Trading Dashboard</h1>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-<<<<<<< HEAD
-=======
               {hasApiKey ? (
->>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
                 <Card className="mb-6">
                   <CardHeader>
                     <CardTitle>Market Trends</CardTitle>
@@ -53,8 +50,6 @@ const Trading = () => {
                     <Watchlists />
                   </CardContent>
                 </Card>
-<<<<<<< HEAD
-=======
               ) : (
                 <Card className="mb-6">
                   <CardHeader>
@@ -68,7 +63,7 @@ const Trading = () => {
                   </CardContent>
                 </Card>
               )}
-              
+
               <Tabs defaultValue="buy" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="buy">Buy</TabsTrigger>
@@ -97,7 +92,7 @@ const Trading = () => {
                           </div>
                           <Button className="mt-2 w-full sm:w-auto">Buy Now</Button>
                         </div>
-                        
+
                         <div className="bg-muted/50 p-4 rounded-md">
                           <div className="flex items-center justify-between">
                             <div>
@@ -134,9 +129,8 @@ const Trading = () => {
                   </Card>
                 </TabsContent>
               </Tabs>
->>>>>>> 8c9f8871159954befd92e27ce0ea2c6c72815803
             </div>
-            
+
             <div className="lg:col-span-1">
               <Card>
                 <CardHeader>
@@ -151,12 +145,12 @@ const Trading = () => {
                       <p className="text-sm text-muted-foreground">Total Value</p>
                       <h3 className="text-2xl font-bold">$0.00</h3>
                     </div>
-                    
+
                     <div>
                       <p className="text-sm text-muted-foreground">Assets Owned</p>
                       <h3 className="text-xl font-bold">0</h3>
                     </div>
-                    
+
                     <div className="pt-4 border-t">
                       <Button variant="outline" className="w-full" asChild>
                         <Link to="/portfolio">View Portfolio</Link>
@@ -165,7 +159,7 @@ const Trading = () => {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card className="mt-6">
                 <CardHeader>
                   <CardTitle>Market News</CardTitle>
@@ -205,28 +199,28 @@ const Trading = () => {
             <div className="p-4 border rounded-md bg-muted/30">
               <h4 className="font-semibold mb-2">Important Notice:</h4>
               <p className="text-xs mb-3">
-                The use of DinoTradez site does not guarantee profitable results. This site should not be used as a standalone analysis tool. 
-                It is essential to combine it with other forms of analysis, such as fundamental analysis, technical analysis, risk 
+                The use of DinoTradez site does not guarantee profitable results. This site should not be used as a standalone analysis tool.
+                It is essential to combine it with other forms of analysis, such as fundamental analysis, technical analysis, risk
                 management strategies, and awareness of current market conditions. Always conduct thorough research.
               </p>
               <h4 className="font-semibold mb-2">Note:</h4>
               <p className="text-xs mb-3">
-                The effectiveness of DinoTradez site can vary based on market conditions and individual trading styles. 
+                The effectiveness of DinoTradez site can vary based on market conditions and individual trading styles.
                 It's crucial to test strategies thoroughly using historical data before applying them in live trading scenarios.
               </p>
               <h4 className="font-semibold mb-2">Disclaimer:</h4>
               <p className="text-xs">
-                Trading financial instruments involves substantial risk and may not be suitable for all investors. 
-                Past performance is not indicative of future results. This website is provided for informational, 
-                educational and most importantly entertainment purposes only and should not be considered investment advice. 
+                Trading financial instruments involves substantial risk and may not be suitable for all investors.
+                Past performance is not indicative of future results. This website is provided for informational,
+                educational and most importantly entertainment purposes only and should not be considered investment advice.
                 Always conduct your own research before making any financial decisions. DinoTradez is not liable for your actions.
               </p>
             </div>
           </div>
           <p className="text-sm text-muted-foreground">© 2025 Dino Tradez. All rights reserved.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            <a 
-              href="https://jjsppl.github.io/dinotradez/" 
+            <a
+              href="https://jjsppl.github.io/dinotradez/"
               className="hover:text-foreground"
               target="_blank"
               rel="noopener noreferrer"
