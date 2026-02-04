@@ -95,6 +95,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSmoothScrolling();
     initializeSearchFunctionality();
     initializeLiveMarketUpdates();
+    initializeCryptoPrices();
+    initializeCommodityPrices();
     initializeMarketIntelligence();
     initializeDynamicScanning();
     initializeShortInterestFilter();
@@ -454,6 +456,116 @@ function updateLastRefreshTime() {
     if (timeDisplay) {
         const now = new Date();
         timeDisplay.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+    }
+}
+
+// ========================================
+// CRYPTOCURRENCY PRICES
+// ========================================
+
+function initializeCryptoPrices() {
+    console.log('Initializing cryptocurrency prices...');
+    updateCryptoPrices();
+
+    // Update every 60 seconds
+    setInterval(() => {
+        console.log('Refreshing crypto prices...');
+        updateCryptoPrices();
+    }, 60000);
+}
+
+async function updateCryptoPrices() {
+    const cryptoCards = document.querySelectorAll('.crypto-card');
+
+    for (const card of cryptoCards) {
+        const symbol = card.dataset.symbol;
+        if (!symbol) continue;
+
+        try {
+            const quote = await fetchStockQuote(symbol);
+            if (!quote || !quote.price) continue;
+
+            const priceEl = card.querySelector('.crypto-price');
+            const changeEl = card.querySelector('.crypto-change');
+            const changeContainer = card.querySelector('.market-change');
+
+            if (priceEl) {
+                // Format crypto price based on value
+                if (quote.price >= 1000) {
+                    priceEl.textContent = '$' + quote.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                } else if (quote.price >= 1) {
+                    priceEl.textContent = '$' + quote.price.toFixed(2);
+                } else {
+                    priceEl.textContent = '$' + quote.price.toFixed(4);
+                }
+            }
+
+            if (changeEl && changeContainer) {
+                const change = quote.change || 0;
+                const percentChange = quote.percentChange || 0;
+                const isPositive = change >= 0;
+
+                changeContainer.className = `market-change ${isPositive ? 'positive' : 'negative'}`;
+                changeEl.textContent = `${isPositive ? '+' : ''}${percentChange.toFixed(2)}%`;
+            }
+
+        } catch (error) {
+            console.error(`Error fetching ${symbol}:`, error);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 300));
+    }
+}
+
+// ========================================
+// COMMODITY PRICES
+// ========================================
+
+function initializeCommodityPrices() {
+    console.log('Initializing commodity prices...');
+    updateCommodityPrices();
+
+    // Update every 2 minutes
+    setInterval(() => {
+        console.log('Refreshing commodity prices...');
+        updateCommodityPrices();
+    }, 120000);
+}
+
+async function updateCommodityPrices() {
+    const commodityCards = document.querySelectorAll('.commodity-card');
+
+    for (const card of commodityCards) {
+        const symbol = card.dataset.symbol;
+        if (!symbol) continue;
+
+        try {
+            const quote = await fetchStockQuote(symbol);
+            if (!quote || !quote.price) continue;
+
+            const priceEl = card.querySelector('.commodity-price');
+            const changeEl = card.querySelector('.commodity-change');
+            const changeContainer = card.querySelector('.market-change');
+
+            if (priceEl) {
+                // Format commodity price
+                priceEl.textContent = '$' + quote.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
+
+            if (changeEl && changeContainer) {
+                const change = quote.change || 0;
+                const percentChange = quote.percentChange || 0;
+                const isPositive = change >= 0;
+
+                changeContainer.className = `market-change ${isPositive ? 'positive' : 'negative'}`;
+                changeEl.textContent = `${isPositive ? '+' : ''}${change.toFixed(2)} (${isPositive ? '+' : ''}${percentChange.toFixed(2)}%)`;
+            }
+
+        } catch (error) {
+            console.error(`Error fetching ${symbol}:`, error);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 300));
     }
 }
 
