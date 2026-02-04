@@ -1,29 +1,30 @@
 // DinoTradez - Main JavaScript File with REAL Stock Prices
-// Using Finnhub.io API for live market data
+// Using RapidAPI Yahoo Finance for live market data
 
-// Finnhub API Configuration (Free tier - 60 calls/minute)
-const FINNHUB_API_KEY = 'ctpars9r01qhb4g3h7tgctpars9r01qhb4g3h7u0'; // Free API key
-const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
+// RapidAPI Yahoo Finance Configuration
+const RAPIDAPI_KEY = '48b0ef34e6msh9fe72fb5f0d3e4ap126332jsn1e6298c105ee';
+const RAPIDAPI_HOST = 'yahoo-finance15.p.rapidapi.com';
+const RAPIDAPI_BASE_URL = 'https://yahoo-finance15.p.rapidapi.com/api/v1';
 
 // Cache for stock data to reduce API calls
 const stockCache = {};
-const CACHE_DURATION = 30000; // 30 seconds
+const CACHE_DURATION = 60000; // 60 seconds
 
 // Wait for the DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DinoTradez application initialized with LIVE data');
+    console.log('DinoTradez application initialized with LIVE Yahoo Finance data');
 
     // Initialize all components
     initializeNavigation();
     initializeThemeToggle();
     initializeSmoothScrolling();
     initializeSearchFunctionality();
-    initializeLiveMarketUpdates(); // Changed to live updates
+    initializeLiveMarketUpdates();
     initializeShortInterestFilter();
     initializeResponsiveTables();
 });
 
-// Fetch real stock quote from Finnhub
+// Fetch real stock quote from RapidAPI Yahoo Finance
 async function fetchStockQuote(symbol) {
     // Check cache first
     const cached = stockCache[symbol];
@@ -33,7 +34,14 @@ async function fetchStockQuote(symbol) {
 
     try {
         const response = await fetch(
-            `${FINNHUB_BASE_URL}/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`
+            `${RAPIDAPI_BASE_URL}/markets/quote?ticker=${symbol}`,
+            {
+                method: 'GET',
+                headers: {
+                    'X-RapidAPI-Key': RAPIDAPI_KEY,
+                    'X-RapidAPI-Host': RAPIDAPI_HOST
+                }
+            }
         );
 
         if (!response.ok) {
@@ -42,75 +50,82 @@ async function fetchStockQuote(symbol) {
 
         const data = await response.json();
 
-        // Cache the result
-        stockCache[symbol] = {
-            data: data,
-            timestamp: Date.now()
-        };
+        // Parse the response - Yahoo Finance format
+        let quoteData = null;
+        if (data && data.body) {
+            const body = Array.isArray(data.body) ? data.body[0] : data.body;
+            if (body) {
+                quoteData = {
+                    symbol: symbol,
+                    price: body.regularMarketPrice || body.currentPrice || body.price,
+                    change: body.regularMarketChange || (body.regularMarketPrice - body.previousClose),
+                    percentChange: body.regularMarketChangePercent || body.changePercent,
+                    previousClose: body.previousClose,
+                    open: body.regularMarketOpen || body.open,
+                    high: body.regularMarketDayHigh || body.dayHigh,
+                    low: body.regularMarketDayLow || body.dayLow,
+                    volume: body.regularMarketVolume || body.volume,
+                    avgVolume: body.averageVolume || body.avgVolume,
+                    marketCap: body.marketCap
+                };
+            }
+        }
 
-        return data;
+        // Cache the result
+        if (quoteData && quoteData.price) {
+            stockCache[symbol] = {
+                data: quoteData,
+                timestamp: Date.now()
+            };
+        }
+
+        return quoteData;
     } catch (error) {
         console.error(`Error fetching ${symbol}:`, error);
         return null;
     }
 }
 
-// Fetch multiple stock quotes
-async function fetchMultipleQuotes(symbols) {
-    const quotes = {};
-
-    // Fetch in batches to respect rate limits
-    for (const symbol of symbols) {
-        const quote = await fetchStockQuote(symbol);
-        if (quote && quote.c) { // c = current price
-            quotes[symbol] = {
-                price: quote.c,
-                change: quote.d || 0,
-                percentChange: quote.dp || 0,
-                high: quote.h,
-                low: quote.l,
-                open: quote.o,
-                previousClose: quote.pc
-            };
-        }
-        // Small delay to respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    return quotes;
-}
-
 // Update market overview cards with real data
 async function updateMarketOverview() {
     const indices = {
-        'SPY': '.market-card:nth-child(1)', // S&P 500 ETF
-        'QQQ': '.market-card:nth-child(2)', // Nasdaq ETF
-        'DIA': '.market-card:nth-child(3)', // Dow Jones ETF
-        'IWM': '.market-card:nth-child(4)'  // Russell 2000 ETF
+        'SPY': { selector: '.market-card:nth-child(1)', name: 'S&P 500' },
+        'QQQ': { selector: '.market-card:nth-child(2)', name: 'Nasdaq' },
+        'DIA': { selector: '.market-card:nth-child(3)', name: 'Dow Jones' },
+        'IWM': { selector: '.market-card:nth-child(4)', name: 'Russell 2000' }
     };
 
-    for (const [symbol, selector] of Object.entries(indices)) {
-        const quote = await fetchStockQuote(symbol);
-        if (!quote || !quote.c) continue;
+    for (const [symbol, info] of Object.entries(indices)) {
+        try {
+            const quote = await fetchStockQuote(symbol);
+            if (!quote || !quote.price) continue;
 
-        const card = document.querySelector(selector);
-        if (!card) continue;
+            const card = document.querySelector(info.selector);
+            if (!card) continue;
 
-        const valueEl = card.querySelector('.market-value');
-        const changeEl = card.querySelector('.market-change');
+            const valueEl = card.querySelector('.market-value');
+            const changeEl = card.querySelector('.market-change');
 
-        if (valueEl) {
-            valueEl.textContent = quote.c.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
-
-        if (changeEl) {
-            const isPositive = quote.d >= 0;
-            changeEl.className = `market-change ${isPositive ? 'positive' : 'negative'}`;
-            const changeText = changeEl.querySelector('p');
-            if (changeText) {
-                changeText.textContent = `${isPositive ? '+' : ''}${quote.d?.toFixed(2) || '0.00'} (${isPositive ? '+' : ''}${quote.dp?.toFixed(2) || '0.00'}%)`;
+            if (valueEl) {
+                valueEl.textContent = quote.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             }
+
+            if (changeEl) {
+                const change = quote.change || 0;
+                const percentChange = quote.percentChange || 0;
+                const isPositive = change >= 0;
+                changeEl.className = `market-change ${isPositive ? 'positive' : 'negative'}`;
+                const changeText = changeEl.querySelector('p');
+                if (changeText) {
+                    changeText.textContent = `${isPositive ? '+' : ''}${change.toFixed(2)} (${isPositive ? '+' : ''}${percentChange.toFixed(2)}%)`;
+                }
+            }
+        } catch (error) {
+            console.error(`Error updating ${symbol}:`, error);
         }
+
+        // Small delay between API calls to respect rate limits
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
 }
 
@@ -128,63 +143,77 @@ async function updateStockTable() {
             const symbol = symbolCell.textContent.trim().toUpperCase();
             if (!symbol) continue;
 
-            const quote = await fetchStockQuote(symbol);
-            if (!quote || !quote.c) continue;
+            try {
+                const quote = await fetchStockQuote(symbol);
+                if (!quote || !quote.price) continue;
 
-            // Update price (2nd column)
-            const priceCell = row.querySelector('td:nth-child(2)');
-            if (priceCell) {
-                priceCell.textContent = quote.c.toFixed(2);
+                // Update price (2nd column)
+                const priceCell = row.querySelector('td:nth-child(2)');
+                if (priceCell) {
+                    priceCell.textContent = quote.price.toFixed(2);
+                }
+
+                // Update change (3rd column)
+                const changeCell = row.querySelector('td:nth-child(3)');
+                if (changeCell) {
+                    const change = quote.change || 0;
+                    const isPositive = change >= 0;
+                    changeCell.textContent = `${isPositive ? '+' : ''}${change.toFixed(2)}`;
+                    changeCell.className = isPositive ? 'positive' : 'negative';
+                }
+
+                // Update percent change (4th column)
+                const percentCell = row.querySelector('td:nth-child(4)');
+                if (percentCell) {
+                    const percentChange = quote.percentChange || 0;
+                    const isPositive = percentChange >= 0;
+                    percentCell.textContent = `${isPositive ? '+' : ''}${percentChange.toFixed(2)}%`;
+                    percentCell.className = isPositive ? 'positive' : 'negative';
+                }
+
+            } catch (error) {
+                console.error(`Error updating row for ${symbol}:`, error);
             }
 
-            // Update change (3rd column)
-            const changeCell = row.querySelector('td:nth-child(3)');
-            if (changeCell) {
-                const isPositive = quote.d >= 0;
-                changeCell.textContent = `${isPositive ? '+' : ''}${(quote.d || 0).toFixed(2)}`;
-                changeCell.className = isPositive ? 'positive' : 'negative';
-            }
-
-            // Update percent change (4th column)
-            const percentCell = row.querySelector('td:nth-child(4)');
-            if (percentCell) {
-                const isPositive = quote.dp >= 0;
-                percentCell.textContent = `${isPositive ? '+' : ''}${(quote.dp || 0).toFixed(2)}%`;
-                percentCell.className = isPositive ? 'positive' : 'negative';
-            }
+            // Delay between API calls
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
     }
 }
 
-// Initialize LIVE Market Updates (replaces fake updates)
+// Initialize LIVE Market Updates
 function initializeLiveMarketUpdates() {
-    // Initial update
-    console.log('Fetching live market data...');
-    updateMarketOverview();
-    updateStockTable();
+    console.log('Fetching live market data from Yahoo Finance...');
 
-    // Update market overview every 30 seconds
+    // Initial update
+    updateMarketOverview();
+
+    // Delay stock table update to avoid rate limiting
+    setTimeout(() => {
+        updateStockTable();
+    }, 5000);
+
+    // Update market overview every 2 minutes
     setInterval(() => {
         console.log('Refreshing market overview...');
         updateMarketOverview();
-    }, 30000);
+    }, 120000);
 
-    // Update stock tables every 60 seconds
+    // Update stock tables every 3 minutes
     setInterval(() => {
         console.log('Refreshing stock prices...');
         updateStockTable();
-    }, 60000);
+    }, 180000);
 
     // Show last update time
     updateLastRefreshTime();
-    setInterval(updateLastRefreshTime, 30000);
+    setInterval(updateLastRefreshTime, 60000);
 }
 
 // Show when data was last updated
 function updateLastRefreshTime() {
     let timeDisplay = document.getElementById('last-update-time');
     if (!timeDisplay) {
-        // Create the display element if it doesn't exist
         const header = document.querySelector('.section-header');
         if (header) {
             timeDisplay = document.createElement('p');
@@ -332,26 +361,28 @@ function initializeSearchFunctionality() {
         // Fetch real stock data
         const quote = await fetchStockQuote(ticker);
 
-        if (!quote || !quote.c) {
+        if (!quote || !quote.price) {
             showMessage(`Could not find stock ${ticker}`, 'error');
             return;
         }
 
-        const isPositive = (quote.d || 0) >= 0;
+        const change = quote.change || 0;
+        const percentChange = quote.percentChange || 0;
+        const isPositive = change >= 0;
 
         // Create row with real data
         const row = document.createElement('tr');
         row.innerHTML = `
             <td class="symbol-col">${ticker}</td>
-            <td>${quote.c.toFixed(2)}</td>
-            <td class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '+' : ''}${(quote.d || 0).toFixed(2)}</td>
-            <td class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '+' : ''}${(quote.dp || 0).toFixed(2)}%</td>
+            <td>${quote.price.toFixed(2)}</td>
+            <td class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '+' : ''}${change.toFixed(2)}</td>
+            <td class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '+' : ''}${percentChange.toFixed(2)}%</td>
             <td>-</td>
             <td>-</td>
+            <td>${quote.marketCap ? formatLargeNumber(quote.marketCap) : '-'}</td>
             <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
+            <td>${quote.volume ? formatLargeNumber(quote.volume) : '-'}</td>
+            <td>${quote.avgVolume ? formatLargeNumber(quote.avgVolume) : '-'}</td>
             <td>-</td>
             <td>-</td>
         `;
@@ -375,7 +406,16 @@ function initializeSearchFunctionality() {
             row.style.opacity = '1';
         }, 50);
 
-        showMessage(`${ticker} added with LIVE price: $${quote.c.toFixed(2)}`, 'success');
+        showMessage(`${ticker} added with LIVE price: $${quote.price.toFixed(2)}`, 'success');
+    }
+
+    // Format large numbers (e.g., market cap, volume)
+    function formatLargeNumber(num) {
+        if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+        if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+        if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+        if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+        return num.toString();
     }
 
     // Event listeners
