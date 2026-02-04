@@ -5,48 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DinoTradez - Real-time Stock Market Data</title>
   <meta name="description" content="Track and analyze stock market data in real-time with DinoTradez" />
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/DinoTradez-On-the-Go/assets/favicon-DCl5Ya7S.svg" />
-  
-  <!-- Load Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            green: {
-              400: '#4ade80',
-              500: '#22c55e',
-              900: '#14532d',
-            },
-            gray: {
-              400: '#9ca3af',
-              500: '#6b7280',
-              800: '#1f2937',
-              900: '#111827',
-            },
-          },
-        },
-      },
-    }
-  </script>
-  
-  <!-- Load additional dependencies -->
-  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/recharts@2.7.2/umd/Recharts.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sonner@1.0.0/dist/index.js"></script>
-  
+
   <style>
     body {
       background-color: #000;
       color: #fff;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
     }
-    
+
     .matrix-rain {
       position: fixed;
       top: 0;
@@ -56,108 +27,95 @@
       z-index: 0;
       pointer-events: none;
     }
+
+    #root {
+      position: relative;
+      z-index: 1;
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #333;
+      border-top: 4px solid #22c55e;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
+  <script type="module" crossorigin src="/DinoTradez-On-the-Go/assets/index-yj18wob8.js"></script>
+  <link rel="modulepreload" crossorigin href="/DinoTradez-On-the-Go/assets/vendor-BPUfrzA5.js">
+  <link rel="stylesheet" crossorigin href="/DinoTradez-On-the-Go/assets/index-BsoqcJtP.css">
 </head>
 <body>
+  <!-- Matrix background canvas -->
+  <canvas id="matrix-bg" class="matrix-rain"></canvas>
+
   <div id="root">
-    <!-- Matrix background canvas will be mounted here using JS -->
-    <canvas id="matrix-bg" class="matrix-rain"></canvas>
-    
-    <div class="container mx-auto p-4 relative z-10">
-      <header class="mb-6">
-        <h1 class="text-3xl font-bold text-green-500">DinoTradez</h1>
-        <p class="text-gray-400">Real-time Stock Market Data</p>
-      </header>
-      
-      <main class="space-y-8" id="app-content">
-        <!-- Content will be loaded dynamically -->
-        <div class="bg-black rounded-lg shadow-lg p-4 border border-gray-800">
-          <h2 class="text-2xl font-bold text-white">Loading DinoTradez...</h2>
-          <div class="animate-pulse space-y-4 mt-4">
-            <div class="bg-gray-900 h-10 rounded"></div>
-            <div class="bg-gray-900 h-40 rounded"></div>
-          </div>
-        </div>
-      </main>
-      
-      <footer class="mt-8 text-center text-gray-500 text-sm">
-        <p>© <span id="current-year"></span> DinoTradez. All rights reserved.</p>
-      </footer>
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <h1 style="color: #22c55e; margin: 0;">DinoTradez</h1>
+      <p style="color: #9ca3af;">Loading...</p>
     </div>
   </div>
-  
-  <!-- Initialize the app -->
+
+  <!-- Matrix background animation -->
   <script>
-    // Set current year in footer
-    document.getElementById('current-year').textContent = new Date().getFullYear();
-    
-    // Matrix background animation
     (function initMatrixBackground() {
       const canvas = document.getElementById('matrix-bg');
       const ctx = canvas.getContext('2d');
-      
-      // Set canvas dimensions
+
       function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
       }
-      
+
       resizeCanvas();
       window.addEventListener('resize', resizeCanvas);
-      
-      // Matrix rain effect
+
       const fontSize = 14;
       const columns = Math.floor(canvas.width / fontSize);
       const drops = Array(columns).fill(0).map(() => Math.floor(Math.random() * canvas.height));
       const chars = "01".split("");
-      
+
       function draw() {
         ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = "#0F0"; // Matrix green
+
+        ctx.fillStyle = "#0F0";
         ctx.font = `${fontSize}px monospace`;
-        
+
         for (let i = 0; i < drops.length; i++) {
-          // Random character
           const char = chars[Math.floor(Math.random() * chars.length)];
-          
-          // Draw the character
           ctx.fillText(char, i * fontSize, drops[i] * fontSize);
-          
-          // Move drops down
+
           if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
             drops[i] = 0;
           }
           drops[i]++;
         }
-        
+
         requestAnimationFrame(draw);
       }
-      
+
       draw();
     })();
-    
-    // Load DinoTradez app
-    window.addEventListener('DOMContentLoaded', function() {
-      // Load the bundled app code
-      const script = document.createElement('script');
-      script.src = './main.js';
-      script.type = 'module';
-      script.onload = function() {
-        console.log('DinoTradez app loaded successfully');
-      };
-      script.onerror = function() {
-        console.error('Failed to load DinoTradez app');
-        document.getElementById('app-content').innerHTML = `
-          <div class="bg-black rounded-lg shadow-lg p-4 border border-gray-800">
-            <h2 class="text-2xl font-bold text-red-500">Error Loading App</h2>
-            <p class="text-gray-400 mt-2">Unable to load DinoTradez. Please try refreshing the page.</p>
-          </div>
-        `;
-      };
-      document.body.appendChild(script);
-    });
   </script>
+
+  <!-- Vite entry point -->
 </body>
 </html>
