@@ -1,17 +1,36 @@
 // DinoTradez - Real Scoring Algorithms & Live Data
-// Stock data via secure API proxy, CoinGecko (crypto - FREE)
-// Intelligence: SEC EDGAR (S-3), Finnhub Metrics (short interest), FINRA (dark pool)
+// Direct Finnhub API with token-bucket rate limiting + localStorage cache
+// Intelligence: SEC EDGAR (S-3 link), short interest (baseline), dark pool (estimation)
 // Scoring ported from src/pages/api/ TypeScript endpoints
 
 // ========================================
 // CONFIGURATION
 // ========================================
-// API proxy — keys are stored securely in the Cloudflare Worker, not in client code
-// IMPORTANT: After deploying your Worker, replace this URL with your Worker's URL
-// e.g. 'https://dinotradez-api.YOUR_SUBDOMAIN.workers.dev'
-const API_BASE_URL = 'https://dinotradez-api.jjsppl.workers.dev';
-const stockCache = {};
-const CACHE_DURATION = 300000; // 5 min cache
+const FINNHUB_API_KEY = 'cvt3s5hr01qosd2f1pugcvt3s5hr01qosd2f1pv0';
+const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
+
+const CACHE_KEY = 'dinoTradez_stockCache';
+const CACHE_VERSION = 2;
+const CACHE_ENTRY_TTL = 300000; // 5 min per symbol
+
+// In-memory cache (loaded from localStorage on init)
+let stockCache = {};
+
+function loadCacheFromStorage() {
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed._v !== CACHE_VERSION) { localStorage.removeItem(CACHE_KEY); return; }
+        stockCache = parsed.data || {};
+    } catch (e) { console.warn('Cache load failed:', e); }
+}
+
+function saveCacheToStorage() {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ _v: CACHE_VERSION, data: stockCache }));
+    } catch (e) { console.warn('Cache save failed:', e); }
+}
 
 // ========================================
 // STOCK LISTS (from src/pages/api/ endpoints)
@@ -46,6 +65,77 @@ const ORIGINAL_2023_PRICES = {
 let scannedStocks = { bullish:[], bearish:[], lotto:[], darkPool:[], shortInterest:[] };
 
 // ========================================
+// TOKEN-BUCKET RATE LIMITER
+// ========================================
+const RATE_LIMIT = {
+    maxTokens: 55,       // Finnhub allows 60/min, leave margin
+    tokens: 55,
+    refillRate: 55 / 60, // tokens per second
+    lastRefill: Date.now()
+};
+
+function refillTokens() {
+    const now = Date.now();
+    const elapsed = (now - RATE_LIMIT.lastRefill) / 1000;
+    RATE_LIMIT.tokens = Math.min(RATE_LIMIT.maxTokens, RATE_LIMIT.tokens + elapsed * RATE_LIMIT.refillRate);
+    RATE_LIMIT.lastRefill = now;
+}
+
+async function waitForToken() {
+    refillTokens();
+    if (RATE_LIMIT.tokens >= 1) {
+        RATE_LIMIT.tokens -= 1;
+        return;
+    }
+    // Wait until a token is available
+    const waitMs = ((1 - RATE_LIMIT.tokens) / RATE_LIMIT.refillRate) * 1000;
+    console.log(`Rate limiter: waiting ${Math.ceil(waitMs)}ms for token`);
+    await delay(Math.ceil(waitMs) + 50);
+    refillTokens();
+    RATE_LIMIT.tokens -= 1;
+}
+
+async function fetchWithRetry(url, retries = 3) {
+    for (let attempt = 0; attempt < retries; attempt++) {
+        await waitForToken();
+        try {
+            const res = await fetch(url);
+            if (res.status === 429) {
+                const backoff = Math.pow(2, attempt + 1) * 1000;
+                console.warn(`429 rate limited, backing off ${backoff}ms (attempt ${attempt + 1}/${retries})`);
+                await delay(backoff);
+                continue;
+            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } catch (e) {
+            if (attempt === retries - 1) throw e;
+            await delay(Math.pow(2, attempt) * 500);
+        }
+    }
+    throw new Error('Max retries exceeded');
+}
+
+// ========================================
+// SYMBOL DEDUPLICATION
+// ========================================
+function getUniqueSymbols() {
+    // Priority: Market Indices > Dark Pool > Bullish > Bearish > Lotto > Short Interest
+    const seen = new Set();
+    const ordered = [];
+    const lists = [MARKET_INDICES, DARK_POOL_STOCKS, BULLISH_STOCKS, BEARISH_STOCKS, LOTTO_STOCKS, SHORT_INTEREST_STOCKS];
+    for (const list of lists) {
+        for (const sym of list) {
+            if (!seen.has(sym)) {
+                seen.add(sym);
+                ordered.push(sym);
+            }
+        }
+    }
+    return ordered;
+}
+
+// ========================================
 // UTILITIES
 // ========================================
 function showMessage(message, type = 'info') {
@@ -70,20 +160,18 @@ function formatLargeNumber(num) {
 
 function isCached(symbol) {
     const c = stockCache[symbol];
-    return c && Date.now() - c.timestamp < CACHE_DURATION;
+    return c && Date.now() - c.timestamp < CACHE_ENTRY_TTL;
 }
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ========================================
-// STOCK QUOTE API (via secure Cloudflare Worker proxy)
+// STOCK QUOTE API (direct Finnhub)
 // ========================================
 async function fetchStockQuote(symbol) {
     if (isCached(symbol)) return stockCache[symbol].data;
     try {
-        const res = await fetch(`${API_BASE_URL}/api/quote?symbol=${symbol}`);
-        if (!res.ok) throw new Error(`API ${res.status}`);
-        const d = await res.json();
+        const d = await fetchWithRetry(`${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_API_KEY}`);
         if (d && d.c && d.c > 0) {
             const range = d.pc > 0 ? (d.h - d.l) / d.pc : 0;
             let estVol;
@@ -106,6 +194,7 @@ async function fetchStockQuote(symbol) {
                 marketCap: estMC, sharesOutstanding: Math.floor(estMC / d.c)
             };
             stockCache[symbol] = { data: q, timestamp: Date.now() };
+            saveCacheToStorage();
             return q;
         }
         return stockCache[symbol]?.data || null;
@@ -113,6 +202,53 @@ async function fetchStockQuote(symbol) {
         console.error(`Fetch ${symbol}:`, e);
         return stockCache[symbol]?.data || null;
     }
+}
+
+// ========================================
+// CARD RENDERING (Market, Crypto, Commodity)
+// ========================================
+function renderMarketCards() {
+    const grid = document.getElementById('indices-grid');
+    if (!grid) return;
+    const icons = { 'SPY': 'fa-chart-line', 'QQQ': 'fa-microchip', 'DIA': 'fa-industry', 'IWM': 'fa-building', 'VIXY': 'fa-bolt', 'TLT': 'fa-university' };
+    const names = { 'SPY': 'S&P 500', 'QQQ': 'NASDAQ 100', 'DIA': 'Dow Jones', 'IWM': 'Russell 2000', 'VIXY': 'VIX Volatility', 'TLT': '20Y Treasury' };
+    grid.innerHTML = MARKET_INDICES.map(sym => `
+        <div class="market-card" data-symbol="${sym}">
+            <div class="card-icon"><i class="fas ${icons[sym] || 'fa-chart-bar'}"></i></div>
+            <div class="card-label">${names[sym] || sym}</div>
+            <div class="market-value">--</div>
+            <div class="market-change neutral"><p>--</p></div>
+        </div>`).join('');
+}
+
+function renderCryptoCards() {
+    const grid = document.getElementById('crypto-grid');
+    if (!grid) return;
+    const icons = { 'BTC-USD': 'fa-bitcoin-sign', 'ETH-USD': 'fa-ethereum', 'BNB-USD': 'fa-coins', 'SOL-USD': 'fa-sun', 'XRP-USD': 'fa-water', 'DOGE-USD': 'fa-dog' };
+    const names = { 'BTC-USD': 'Bitcoin', 'ETH-USD': 'Ethereum', 'BNB-USD': 'BNB', 'SOL-USD': 'Solana', 'XRP-USD': 'XRP', 'DOGE-USD': 'Dogecoin' };
+    const symbols = Object.keys(cryptoMapping);
+    grid.innerHTML = symbols.map(sym => `
+        <div class="crypto-card" data-symbol="${sym}">
+            <div class="card-icon"><i class="fas ${icons[sym] || 'fa-coins'}"></i></div>
+            <div class="card-label">${names[sym] || sym}</div>
+            <div class="crypto-price">--</div>
+            <div class="market-change neutral"><p class="crypto-change">--</p></div>
+        </div>`).join('');
+}
+
+function renderCommodityCards() {
+    const grid = document.getElementById('commodity-grid');
+    if (!grid) return;
+    const icons = { 'GC=F': 'fa-coins', 'SI=F': 'fa-ring', 'HG=F': 'fa-cube', 'PL=F': 'fa-gem', 'PA=F': 'fa-gem' };
+    const names = { 'GC=F': 'Gold', 'SI=F': 'Silver', 'HG=F': 'Copper', 'PL=F': 'Platinum', 'PA=F': 'Palladium' };
+    const symbols = Object.keys(commodityMapping);
+    grid.innerHTML = symbols.map(sym => `
+        <div class="commodity-card" data-symbol="${sym}">
+            <div class="card-icon"><i class="fas ${icons[sym] || 'fa-gem'}"></i></div>
+            <div class="card-label">${names[sym] || sym}</div>
+            <div class="commodity-price">--</div>
+            <div class="market-change neutral"><p class="commodity-change">--</p></div>
+        </div>`).join('');
 }
 
 // ========================================
@@ -168,56 +304,79 @@ function estimateDarkPoolPercent(q) {
     return Math.max(25, Math.min(65, dp));
 }
 
+function getScoreSignal(score) {
+    if (score >= 80) return '<span class="strong-buy">Strong Buy</span>';
+    if (score >= 60) return '<span class="buy">Buy</span>';
+    if (score >= 40) return '<span class="watch">Watch</span>';
+    return '<span class="avoid">Avoid</span>';
+}
+
 // ========================================
-// SCANNING ENGINE (progressive updates)
+// SCANNING ENGINE (progressive updates, deduplicated)
 // ========================================
 async function runFullScan() {
-    console.log('Running full scan with real scoring...');
-    updateScanStatus('Scanning market indices...');
+    console.log('Running full scan with deduplicated symbols...');
+    updateScanStatus('Starting scan...');
 
-    // Phase 1: Market Indices
-    for (const sym of MARKET_INDICES) {
-        if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
+    const uniqueSymbols = getUniqueSymbols();
+    const marketSet = new Set(MARKET_INDICES);
+    const darkPoolSet = new Set(DARK_POOL_STOCKS);
+    const bullishSet = new Set(BULLISH_STOCKS);
+    const bearishSet = new Set(BEARISH_STOCKS);
+    const lottoSet = new Set(LOTTO_STOCKS);
+    const shortSet = new Set(SHORT_INTEREST_STOCKS);
+
+    let fetched = 0;
+    const total = uniqueSymbols.length;
+
+    // Track which sections are ready to update
+    let marketDone = false, darkPoolDone = false, bullishDone = false;
+    let bearishDone = false, lottoDone = false, shortDone = false;
+
+    for (const sym of uniqueSymbols) {
+        if (!isCached(sym)) {
+            updateScanStatus(`Fetching ${sym} (${fetched + 1}/${total})...`);
+            await fetchStockQuote(sym);
+        }
+        fetched++;
+
+        // Progressive UI: update sections as soon as all their symbols are cached
+        if (!marketDone && MARKET_INDICES.every(s => stockCache[s]?.data)) {
+            marketDone = true;
+            updateMarketOverview();
+        }
+        if (!darkPoolDone && DARK_POOL_STOCKS.every(s => stockCache[s]?.data)) {
+            darkPoolDone = true;
+            scanDarkPool(); updateDarkPoolUI();
+        }
+        if (!bullishDone && BULLISH_STOCKS.every(s => stockCache[s]?.data)) {
+            bullishDone = true;
+            scanBullish(); updateBullishUI();
+        }
+        if (!bearishDone && BEARISH_STOCKS.every(s => stockCache[s]?.data)) {
+            bearishDone = true;
+            scanBearish(); updateBearishUI();
+        }
+        if (!lottoDone && LOTTO_STOCKS.every(s => stockCache[s]?.data)) {
+            lottoDone = true;
+            scanLotto(); updateLottoUI();
+        }
+        if (!shortDone && SHORT_INTEREST_STOCKS.every(s => stockCache[s]?.data)) {
+            shortDone = true;
+            scanShortInterest(); updateShortInterestUI();
+        }
     }
-    updateMarketOverview();
-    updateScanStatus('Scanning dark pool activity...');
 
-    // Phase 2: Dark Pool (overlaps with bullish)
-    for (const sym of DARK_POOL_STOCKS) {
-        if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
-    }
-    await scanDarkPool(); updateDarkPoolUI();
-    updateScanStatus('Scanning bullish stocks (20 symbols)...');
+    // Final pass: ensure all sections are updated even if some symbols failed
+    if (!marketDone) updateMarketOverview();
+    if (!darkPoolDone) { scanDarkPool(); updateDarkPoolUI(); }
+    if (!bullishDone) { scanBullish(); updateBullishUI(); }
+    if (!bearishDone) { scanBearish(); updateBearishUI(); }
+    if (!lottoDone) { scanLotto(); updateLottoUI(); }
+    if (!shortDone) { scanShortInterest(); updateShortInterestUI(); }
 
-    // Phase 3: Bullish
-    for (const sym of BULLISH_STOCKS) {
-        if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
-    }
-    scanBullish(); updateBullishUI();
-    updateScanStatus('Scanning bearish stocks (20 symbols)...');
-
-    // Phase 4: Bearish
-    for (const sym of BEARISH_STOCKS) {
-        if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
-    }
-    scanBearish(); updateBearishUI();
-    updateScanStatus('Scoring lotto picks (20 symbols)...');
-
-    // Phase 5: Lotto (heavy overlap with bearish)
-    for (const sym of LOTTO_STOCKS) {
-        if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
-    }
-    scanLotto(); updateLottoUI();
-    updateScanStatus('Scanning short interest (10 symbols)...');
-
-    // Phase 6: Short Interest
-    for (const sym of SHORT_INTEREST_STOCKS) {
-        if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
-    }
-    await scanShortInterest(); updateShortInterestUI();
-
-    var total = new Set([...MARKET_INDICES,...DARK_POOL_STOCKS,...BULLISH_STOCKS,...BEARISH_STOCKS,...LOTTO_STOCKS,...SHORT_INTEREST_STOCKS]).size;
-    updateScanStatus('Scan complete - ' + total + ' symbols scanned at ' + new Date().toLocaleTimeString());
+    updateLastRefreshTime();
+    updateScanStatus('Scan complete - ' + total + ' symbols at ' + new Date().toLocaleTimeString());
     console.log('Full scan complete');
 }
 
@@ -273,85 +432,35 @@ function scanLotto() {
     scannedStocks.lotto = r.sort((a, b) => b.score - a.score);
 }
 
-async function scanDarkPool() {
+function scanDarkPool() {
     const r = [];
-
-    // Try to get real institutional/ATS data from Worker
-    let atsData = null;
-    try {
-        const syms = DARK_POOL_STOCKS.join(',');
-        const res = await fetch(`${API_BASE_URL}/api/dark-pool?symbols=${syms}`);
-        if (res.ok) {
-            const json = await res.json();
-            atsData = {};
-            for (const item of (json.data || [])) {
-                if (item.atsPercent != null) atsData[item.symbol] = item;
-            }
-        }
-    } catch (e) { console.error('Dark pool API:', e); }
-
     for (const sym of DARK_POOL_STOCKS) {
         const q = stockCache[sym]?.data;
         if (!q || !q.price) continue;
-
-        let dpPct, dpVol, source;
-        if (atsData && atsData[sym]) {
-            dpPct = atsData[sym].atsPercent;
-            dpVol = q.volume * (dpPct / 100);
-            source = atsData[sym].source || 'api';
-        } else {
-            dpPct = estimateDarkPoolPercent(q);
-            dpVol = q.volume * (dpPct / 100);
-            source = 'estimate';
-        }
-
+        const dpPct = estimateDarkPoolPercent(q);
+        const dpVol = q.volume * (dpPct / 100);
         r.push({
             symbol: sym, darkPoolPercent: dpPct, dpVolume: dpVol,
             blockTrades: Math.floor(dpVol / 10000),
             anomaly: dpPct > 55 || dpPct < 30,
             price: q.price, percentChange: q.percentChange,
-            source
+            source: 'estimate'
         });
     }
     scannedStocks.darkPool = r.sort((a, b) => b.darkPoolPercent - a.darkPoolPercent);
 }
 
-async function scanShortInterest() {
+function scanShortInterest() {
     const r = [];
-
-    // Try to get real short interest data from Worker
-    let apiData = null;
-    try {
-        const res = await fetch(`${API_BASE_URL}/api/short-interest`);
-        if (res.ok) {
-            const json = await res.json();
-            apiData = {};
-            for (const item of (json.data || [])) {
-                apiData[item.symbol] = item;
-            }
-        }
-    } catch (e) { console.error('Short interest API:', e); }
-
     for (const sym of SHORT_INTEREST_STOCKS) {
         const q = stockCache[sym]?.data;
         if (!q) continue;
-
-        let shortPercent, source, stale;
-        if (apiData && apiData[sym] && !apiData[sym].stale) {
-            shortPercent = apiData[sym].shortPercent;
-            source = apiData[sym].source || 'api';
-            stale = false;
-        } else {
-            shortPercent = KNOWN_SHORT_INTEREST[sym] || 15;
-            source = 'baseline';
-            stale = true;
-        }
-
         r.push({
-            symbol: sym, shortPercent,
+            symbol: sym,
+            shortPercent: KNOWN_SHORT_INTEREST[sym] || 15,
             percentChange: q.percentChange || 0, volume: q.volume || 0,
             price: q.price || 0, isLotto: (q.price || 0) < 5,
-            source, stale
+            source: 'baseline', stale: true
         });
     }
     scannedStocks.shortInterest = r.sort((a, b) => b.shortPercent - a.shortPercent);
@@ -361,14 +470,16 @@ async function scanShortInterest() {
 // UI UPDATE FUNCTIONS
 // ========================================
 function updateMarketOverview() {
-    const section = document.querySelector('#dashboard');
-    if (!section) return;
-    const cards = section.querySelectorAll('.market-card');
-    MARKET_INDICES.forEach((sym, i) => {
+    const grid = document.getElementById('indices-grid');
+    if (!grid) return;
+    const cards = grid.querySelectorAll('.market-card');
+    cards.forEach(card => {
+        const sym = card.dataset.symbol;
+        if (!sym) return;
         const q = stockCache[sym]?.data;
-        if (!q || !q.price || !cards[i]) return;
-        const val = cards[i].querySelector('.market-value');
-        const chg = cards[i].querySelector('.market-change');
+        if (!q || !q.price) return;
+        const val = card.querySelector('.market-value');
+        const chg = card.querySelector('.market-change');
         if (val) val.textContent = q.price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         if (chg) {
             const pos = (q.change || 0) >= 0;
@@ -379,49 +490,73 @@ function updateMarketOverview() {
     });
 }
 
-function renderStockRow(s) {
+// Bullish/Bearish row: 10 cols matching HTML thead
+// Symbol | Last | Net Chng | %Change | Score | Signal | Volume | Avg Vol | Rel Vol | DP %
+function renderBullishBearishRow(s) {
     const pos = s.percentChange >= 0;
     const cls = pos ? 'positive' : 'negative';
     const sign = pos ? '+' : '';
     return `<tr>
-        <td class="symbol-col">${s.symbol}</td><td>${s.price.toFixed(2)}</td>
+        <td class="symbol-col">${s.symbol}</td>
+        <td>${s.price.toFixed(2)}</td>
         <td class="${cls}">${sign}${s.change.toFixed(2)}</td>
         <td class="${cls}">${sign}${s.percentChange.toFixed(2)}%</td>
-        <td>${formatLargeNumber(s.sharesOutstanding)}</td><td>-</td>
-        <td>${formatLargeNumber(s.marketCap)}</td><td>-</td>
-        <td>${formatLargeNumber(s.volume)}</td><td>${formatLargeNumber(s.avgVolume)}</td>
-        <td>${s.relativeVolume.toFixed(2)}</td><td>${s.darkPoolPercent.toFixed(1)}%</td>
+        <td>${s.score}</td>
+        <td>${getScoreSignal(s.score)}</td>
+        <td>${formatLargeNumber(s.volume)}</td>
+        <td>${formatLargeNumber(s.avgVolume)}</td>
+        <td>${s.relativeVolume.toFixed(2)}</td>
+        <td>${s.darkPoolPercent.toFixed(1)}%</td>
+    </tr>`;
+}
+
+// Lotto row: 10 cols matching HTML thead
+// Symbol | Last | Net Chng | %Change | Score | Signal | Volume | Rel Vol | Market Cap | Persistence
+function renderLottoRow(s) {
+    const pos = s.percentChange >= 0;
+    const cls = pos ? 'positive' : 'negative';
+    const sign = pos ? '+' : '';
+    const persistence = s.perfSince2023 >= 0 ? `+${s.perfSince2023.toFixed(1)}%` : `${s.perfSince2023.toFixed(1)}%`;
+    return `<tr>
+        <td class="symbol-col">${s.symbol}</td>
+        <td>${s.price.toFixed(2)}</td>
+        <td class="${cls}">${sign}${s.change.toFixed(2)}</td>
+        <td class="${cls}">${sign}${s.percentChange.toFixed(2)}%</td>
+        <td>${s.score}</td>
+        <td>${getScoreSignal(s.score)}</td>
+        <td>${formatLargeNumber(s.volume)}</td>
+        <td>${s.relativeVolume.toFixed(2)}</td>
+        <td>${formatLargeNumber(s.marketCap)}</td>
+        <td class="${s.perfSince2023 >= 0 ? 'positive' : 'negative'}">${persistence}</td>
     </tr>`;
 }
 
 function updateBullishUI() {
-    const tb = document.querySelector('#bullish .data-table tbody');
+    const tb = document.getElementById('bullish-body');
     if (!tb || !scannedStocks.bullish.length) return;
-    tb.innerHTML = scannedStocks.bullish.slice(0, 10).map(renderStockRow).join('');
+    tb.innerHTML = scannedStocks.bullish.slice(0, 10).map(renderBullishBearishRow).join('');
 }
 
 function updateBearishUI() {
-    const tb = document.querySelector('#bearish .data-table tbody');
+    const tb = document.getElementById('bearish-body');
     if (!tb || !scannedStocks.bearish.length) return;
-    tb.innerHTML = scannedStocks.bearish.slice(0, 10).map(renderStockRow).join('');
+    tb.innerHTML = scannedStocks.bearish.slice(0, 10).map(renderBullishBearishRow).join('');
 }
 
 function updateLottoUI() {
-    const tb = document.querySelector('#lottopicks .data-table tbody');
+    const tb = document.getElementById('lotto-body');
     if (!tb || !scannedStocks.lotto.length) return;
-    tb.innerHTML = scannedStocks.lotto.slice(0, 10).map(renderStockRow).join('');
+    tb.innerHTML = scannedStocks.lotto.slice(0, 10).map(renderLottoRow).join('');
 }
 
 function updateDarkPoolUI() {
-    const tb = document.querySelector('#darkpool .data-table tbody');
+    const tb = document.getElementById('darkpool-body');
     if (!tb || !scannedStocks.darkPool.length) return;
     tb.innerHTML = scannedStocks.darkPool.map(s => {
         const anom = s.anomaly ? ' style="background:rgba(231,76,60,0.1);"' : '';
         const pos = (s.percentChange || 0) >= 0;
         const chgCls = pos ? 'positive' : 'negative';
-        const srcTag = s.source && s.source !== 'estimate'
-            ? '<span style="color:#4ade80;font-size:10px;margin-left:4px" title="Institutional ownership data">INST</span>'
-            : '<span style="color:#888;font-size:10px;margin-left:4px" title="Estimated from price action">EST</span>';
+        const srcTag = '<span style="color:#888;font-size:10px;margin-left:4px" title="Estimated from price action">EST</span>';
         return `<tr${anom}><td class="symbol-col">${s.symbol}</td>
             <td>$${(s.price||0).toFixed(2)}</td>
             <td class="${chgCls}">${pos?'+':''}${(s.percentChange||0).toFixed(2)}%</td>
@@ -436,12 +571,8 @@ function updateShortInterestUI() {
     const c = document.querySelector('#short-interest-list');
     if (!c || !scannedStocks.shortInterest.length) return;
 
-    // Update source label
     const srcLabel = document.querySelector('#si-source-label');
-    const hasReal = scannedStocks.shortInterest.some(s => s.source === 'finnhub');
-    if (srcLabel) srcLabel.textContent = hasReal
-        ? 'Source: Finnhub Metrics (real data)'
-        : 'Source: Baseline estimates (updated periodically)';
+    if (srcLabel) srcLabel.textContent = 'Source: Baseline estimates (updated periodically)';
 
     c.innerHTML = `<div class="short-interest-header" style="display:flex;gap:8px;padding:8px 12px;font-size:11px;color:#888;border-bottom:1px solid rgba(255,255,255,0.1)">
         <div style="flex:1">Symbol</div><div style="flex:1">Short %</div>
@@ -450,9 +581,7 @@ function updateShortInterestUI() {
         const pos = s.percentChange >= 0;
         const warn = s.shortPercent > 15 ? 'warning' : '';
         const lotto = s.isLotto ? 'lotto' : '';
-        const srcBadge = s.source === 'finnhub'
-            ? '<span style="color:#4ade80;font-size:10px" title="Finnhub real data">FH</span>'
-            : '<span style="color:#888;font-size:10px" title="Baseline estimate">EST</span>';
+        const srcBadge = '<span style="color:#888;font-size:10px" title="Baseline estimate">EST</span>';
         return `<div class="short-interest-item ${lotto}" style="display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05)">
             <div style="flex:1;font-weight:600">${s.symbol}</div>
             <div style="flex:1" class="${warn}">${s.shortPercent.toFixed(2)}%</div>
@@ -472,6 +601,7 @@ const cryptoMapping = {
 };
 
 function initializeCryptoPrices() {
+    renderCryptoCards();
     updateCryptoPrices();
     setInterval(updateCryptoPrices, 60000);
 }
@@ -507,7 +637,7 @@ async function updateCryptoPrices() {
 }
 
 // ========================================
-// COMMODITIES (Free metals APIs)
+// COMMODITIES (goldprice.org only)
 // ========================================
 const commodityMapping = { 'GC=F':'gold','SI=F':'silver','HG=F':'copper','PL=F':'platinum','PA=F':'palladium' };
 let commodityCache = {
@@ -516,23 +646,13 @@ let commodityCache = {
 };
 
 function initializeCommodityPrices() {
+    renderCommodityCards();
+    updateCommodityUI(); // Show defaults immediately
     updateCommodityPrices();
     setInterval(updateCommodityPrices, 300000);
 }
 
 async function updateCommodityPrices() {
-    try {
-        const res = await fetch('https://api.metalpriceapi.com/v1/latest?api_key=demo&base=USD&currencies=XAU,XAG,XPT,XPD');
-        if (res.ok) {
-            const d = await res.json();
-            if (d.success && d.rates) {
-                if (d.rates.XAU) commodityCache.gold = {price: 1/d.rates.XAU, change:(Math.random()-0.5)*2};
-                if (d.rates.XAG) commodityCache.silver = {price: 1/d.rates.XAG, change:(Math.random()-0.5)*2};
-                if (d.rates.XPT) commodityCache.platinum = {price: 1/d.rates.XPT, change:(Math.random()-0.5)*2};
-                if (d.rates.XPD) commodityCache.palladium = {price: 1/d.rates.XPD, change:(Math.random()-0.5)*2};
-            }
-        }
-    } catch(e) {}
     try {
         const res = await fetch('https://data-asg.goldprice.org/dbXRates/USD');
         if (res.ok) {
@@ -545,7 +665,11 @@ async function updateCommodityPrices() {
                 if (it.xpdPrice) commodityCache.palladium = {price:it.xpdPrice, change:it.chgXpd||0};
             }
         }
-    } catch(e) {}
+    } catch(e) { console.error('Commodity error:', e); }
+    updateCommodityUI();
+}
+
+function updateCommodityUI() {
     document.querySelectorAll('.commodity-card').forEach(card => {
         const sym = card.dataset.symbol;
         if (!sym) return;
@@ -565,63 +689,41 @@ async function updateCommodityPrices() {
 }
 
 // ========================================
-// MARKET INTELLIGENCE (Real SEC Filings via Worker proxy)
+// MARKET INTELLIGENCE (SEC EDGAR direct link)
 // ========================================
 function initializeMarketIntelligence() {
     updateSECS3Filings();
-    setInterval(updateSECS3Filings, 600000);
 }
 
-async function updateSECS3Filings() {
+function updateSECS3Filings() {
     const c = document.querySelector('#s3-filings');
     if (!c) return;
+    c.innerHTML = `
+        <div style="padding:1rem;text-align:center">
+            <p style="color:#888;margin-bottom:12px">S-3 filings are sourced from SEC EDGAR. Due to CORS restrictions, direct browser access is limited.</p>
+            <a href="https://efts.sec.gov/LATEST/search-index?q=%22S-3%22&dateRange=custom&startdt=${getEdgarDateRange()}&forms=S-3" target="_blank" rel="noopener" class="btn-link" style="color:#3b82f6;text-decoration:none;font-weight:600">
+                <i class="fas fa-external-link-alt"></i> View Latest S-3 Filings on SEC EDGAR
+            </a>
+        </div>`;
+}
 
-    try {
-        const res = await fetch(`${API_BASE_URL}/api/filings/s3`);
-        if (!res.ok) throw new Error(`API ${res.status}`);
-        const data = await res.json();
-
-        if (!data.filings || data.filings.length === 0) {
-            c.innerHTML = '<p style="color:#888;padding:1rem;text-align:center">No recent S-3 filings found</p>';
-            return;
-        }
-
-        c.innerHTML = data.filings.slice(0, 8).map(f => `
-            <div class="filing-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05)">
-                <div style="flex:1">
-                    <div style="font-weight:600;font-size:13px">${f.company}${f.symbol ? ' (' + f.symbol + ')' : ''}</div>
-                    <div style="display:flex;gap:12px;margin-top:4px;font-size:11px;color:#888">
-                        <span style="color:#fbbf24">${f.type}</span>
-                        <span>${f.date}</span>
-                        <span style="color:#4ade80;font-size:10px">${f.source === 'edgar-efts' ? 'EDGAR' : f.source === 'edgar-atom' ? 'RSS' : 'SEC'}</span>
-                    </div>
-                </div>
-                <a href="${f.url}" target="_blank" rel="noopener" style="color:#3b82f6;text-decoration:none;padding:4px 8px">
-                    <i class="fas fa-external-link-alt"></i>
-                </a>
-            </div>`).join('');
-
-        // Show data freshness
-        if (data.asOf) {
-            const age = Math.round((Date.now() - new Date(data.asOf).getTime()) / 60000);
-            const freshEl = c.parentElement?.querySelector('.intel-source');
-            if (freshEl) freshEl.textContent = `Source: SEC EDGAR (${age < 2 ? 'just now' : age + 'min ago'})`;
-        }
-    } catch (e) {
-        console.error('S-3 filings error:', e);
-        c.innerHTML = '<p style="color:#e74c3c;padding:1rem;text-align:center">Unable to load SEC filings — API proxy may not be configured</p>';
-    }
+function getEdgarDateRange() {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split('T')[0];
 }
 
 // ========================================
 // WATCHLIST SEARCH (Add any stock)
 // ========================================
 function initializeSearchFunctionality() {
-    const input = document.querySelector('.search-input');
-    const btn = document.querySelector('.search-button');
-    const tbody = document.querySelector('.stock-watchlist .data-table tbody');
+    const input = document.getElementById('watchlist-input');
+    const btn = document.getElementById('watchlist-add');
+    const tbody = document.getElementById('watchlist-body');
     if (!input || !btn || !tbody) return;
 
+    // Watchlist table: 8 cols matching HTML thead
+    // Symbol | Last | Net Chng | %Change | Volume | Avg Vol | Rel Vol | Market Cap
     async function addStock(ticker) {
         ticker = ticker.toUpperCase().trim();
         if (!ticker) { showMessage('Enter a stock symbol', 'error'); return; }
@@ -642,13 +744,14 @@ function initializeSearchFunctionality() {
             const rv = q.avgVolume > 0 ? (q.volume/q.avgVolume).toFixed(2) : '-';
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td class="symbol-col">${ticker}</td><td>${q.price.toFixed(2)}</td>
+                <td class="symbol-col">${ticker}</td>
+                <td>${q.price.toFixed(2)}</td>
                 <td class="${cls}">${sign}${(q.change||0).toFixed(2)}</td>
                 <td class="${cls}">${sign}${(q.percentChange||0).toFixed(2)}%</td>
-                <td>${formatLargeNumber(q.sharesOutstanding)}</td><td>-</td>
-                <td>${formatLargeNumber(q.marketCap)}</td><td>-</td>
-                <td>${formatLargeNumber(q.volume)}</td><td>${formatLargeNumber(q.avgVolume)}</td>
-                <td>${rv}</td><td>-</td>`;
+                <td>${formatLargeNumber(q.volume)}</td>
+                <td>${formatLargeNumber(q.avgVolume)}</td>
+                <td>${rv}</td>
+                <td>${formatLargeNumber(q.marketCap)}</td>`;
             row.addEventListener('contextmenu', e => { e.preventDefault(); if(confirm(`Remove ${ticker}?`)){row.remove();showMessage(`${ticker} removed`,'success');} });
             row.addEventListener('dblclick', e => { e.preventDefault(); if(confirm(`Remove ${ticker}?`)){row.remove();showMessage(`${ticker} removed`,'success');} });
             row.style.opacity = '0'; row.style.transition = 'opacity 0.3s';
@@ -663,12 +766,12 @@ function initializeSearchFunctionality() {
 }
 
 // ========================================
-// NAVIGATION, THEME, MISC
+// NAVIGATION & MISC
 // ========================================
 function initializeNavigation() {
-    const toggle = document.getElementById('mobile-menu-toggle');
+    const toggle = document.getElementById('mobile-toggle');
     const menu = document.getElementById('mobile-menu');
-    const links = document.querySelectorAll('.navbar-menu a, .mobile-menu a');
+    const links = document.querySelectorAll('#nav-links a, .mobile-menu a');
     if (toggle && menu) {
         toggle.addEventListener('click', () => {
             menu.classList.toggle('active');
@@ -679,7 +782,7 @@ function initializeNavigation() {
         link.addEventListener('click', function() {
             links.forEach(l => l.classList.remove('active'));
             this.classList.add('active');
-            if (menu && menu.classList.contains('active')) { menu.classList.remove('active'); toggle.innerHTML = '<i class="fas fa-bars"></i>'; }
+            if (menu && menu.classList.contains('active')) { menu.classList.remove('active'); if(toggle) toggle.innerHTML = '<i class="fas fa-bars"></i>'; }
         });
     });
     window.addEventListener('scroll', () => {
@@ -688,18 +791,6 @@ function initializeNavigation() {
             if (window.scrollY >= sec.offsetTop - 100 && window.scrollY < sec.offsetTop + sec.offsetHeight) cur = sec.getAttribute('id');
         });
         links.forEach(l => { l.classList.remove('active'); if(l.getAttribute('href') === '#'+cur) l.classList.add('active'); });
-    });
-}
-
-function initializeThemeToggle() {
-    const btn = document.getElementById('theme-toggle');
-    const saved = localStorage.getItem('dinoTheme');
-    if (!saved || saved === 'dark') { if(btn) btn.innerHTML = '<i class="fas fa-sun"></i>'; }
-    else { document.body.classList.add('light-theme'); if(btn) btn.innerHTML = '<i class="fas fa-moon"></i>'; }
-    if (btn) btn.addEventListener('click', () => {
-        document.body.classList.toggle('light-theme');
-        if (document.body.classList.contains('light-theme')) { localStorage.setItem('dinoTheme','light'); btn.innerHTML='<i class="fas fa-moon"></i>'; }
-        else { localStorage.setItem('dinoTheme','dark'); btn.innerHTML='<i class="fas fa-sun"></i>'; }
     });
 }
 
@@ -742,12 +833,8 @@ function initializeResponsiveTables() {
 }
 
 function updateLastRefreshTime() {
-    let el = document.getElementById('last-update-time');
-    if (!el) {
-        const h = document.querySelector('.section-header');
-        if (h) { el = document.createElement('p'); el.id = 'last-update-time'; el.style.cssText = 'font-size:12px;color:#888;margin-top:5px;'; h.appendChild(el); }
-    }
-    if (el) el.textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+    const el = document.getElementById('last-update');
+    if (el) el.textContent = 'Updated: ' + new Date().toLocaleTimeString();
 }
 
 // ========================================
@@ -779,14 +866,52 @@ function updateScanStatus(msg) {
 }
 
 // ========================================
+// REFRESH BUTTON
+// ========================================
+function initializeRefreshButton() {
+    const btn = document.getElementById('refresh-btn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+        // Clear all cached data
+        stockCache = {};
+        localStorage.removeItem(CACHE_KEY);
+        // Reset rate limiter tokens
+        RATE_LIMIT.tokens = RATE_LIMIT.maxTokens;
+        RATE_LIMIT.lastRefill = Date.now();
+        showMessage('Cache cleared - rescanning...', 'info');
+        runFullScan();
+    });
+}
+
+// ========================================
 // MAIN INIT
 // ========================================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DinoTradez initializing with real scoring algorithms...');
+    console.log('DinoTradez initializing with Finnhub direct API...');
+
+    // Load cached data for instant display
+    loadCacheFromStorage();
+
     initializeDisclaimerOverlay();
     initializeNavigation();
-    initializeThemeToggle();
     initializeSmoothScrolling();
+    initializeRefreshButton();
+
+    // Render card containers first
+    renderMarketCards();
+
+    // Show cached data instantly if available
+    if (Object.keys(stockCache).length > 0) {
+        console.log('Restoring cached data for instant display...');
+        updateMarketOverview();
+        scanDarkPool(); updateDarkPoolUI();
+        scanBullish(); updateBullishUI();
+        scanBearish(); updateBearishUI();
+        scanLotto(); updateLottoUI();
+        scanShortInterest(); updateShortInterestUI();
+        updateLastRefreshTime();
+    }
+
     initializeSearchFunctionality();
     initializeCryptoPrices();
     initializeCommodityPrices();
@@ -794,14 +919,10 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeShortInterestFilter();
     initializeResponsiveTables();
     updateLastRefreshTime();
-    setInterval(updateLastRefreshTime, 60000);
 
     // Start scanning after 2 seconds
     setTimeout(() => runFullScan(), 2000);
 
-    // Rescan every 5 minutes
-    setInterval(() => {
-        Object.keys(stockCache).forEach(k => delete stockCache[k]);
-        runFullScan();
-    }, 300000);
+    // Rescan every 5 minutes (individual cache entries expire, no blanket clear)
+    setInterval(() => runFullScan(), 300000);
 });
