@@ -1,7 +1,7 @@
 // DinoTradez - Real Scoring Algorithms & Live Data
 // Direct Finnhub API with token-bucket rate limiting + localStorage cache
 // Intelligence: SEC EDGAR (S-3 link), short interest (baseline), dark pool (estimation)
-// Scoring ported from src/pages/api/ TypeScript endpoints
+// Proprietary scoring algorithms
 
 // ========================================
 // CONFIGURATION
@@ -33,7 +33,7 @@ function saveCacheToStorage() {
 }
 
 // ========================================
-// STOCK LISTS (from src/pages/api/ endpoints)
+// STOCK LISTS
 // ========================================
 const BULLISH_STOCKS = [
     'AAPL','MSFT','GOOGL','AMZN','TSLA','NVDA','META','NFLX','ADBE','CRM',
@@ -255,7 +255,7 @@ function renderCommodityCards() {
 // SCORING ALGORITHMS (from TypeScript API endpoints)
 // ========================================
 
-// Lotto Score: Momentum 30%, Volume 25%, Price Range 25%, Volatility 20%
+// Lotto Score: Proprietary composite
 function calculateLottoScore(q) {
     if (!q || !q.price) return 0;
     let s = 0;
@@ -268,7 +268,7 @@ function calculateLottoScore(q) {
     return s;
 }
 
-// Bullish Score: positive momentum + volume + institutional + price level
+// Bullish Score: Proprietary composite
 function calculateBullishScore(q) {
     if (!q || !q.price) return 0;
     let s = 0;
@@ -280,7 +280,7 @@ function calculateBullishScore(q) {
     return s;
 }
 
-// Bearish Score: negative momentum + volume + institutional + price level
+// Bearish Score: Proprietary composite
 function calculateBearishScore(q) {
     if (!q || !q.price) return 0;
     let s = 0;
@@ -292,7 +292,7 @@ function calculateBearishScore(q) {
     return s;
 }
 
-// Dark Pool % estimate from institutional sentiment proxy
+// Dark Pool % proprietary estimate
 function estimateDarkPoolPercent(q) {
     if (!q || !q.price) return 40;
     let dp = 40;
