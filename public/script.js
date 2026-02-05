@@ -6,12 +6,12 @@
 // ========================================
 // CONFIGURATION
 // ========================================
-const FINNHUB_API_KEY = 'cvt3s5hr01qosd2f1pugcvt3s5hr01qosd2f1pv0';
+const FINNHUB_API_KEY = 'd62ehn1r01qlugepo5ugd62ehn1r01qlugepo5v0';
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
 
 const CACHE_KEY = 'dinoTradez_stockCache';
-const CACHE_VERSION = 2;
-const CACHE_ENTRY_TTL = 300000; // 5 min per symbol
+const CACHE_VERSION = 3;
+const CACHE_ENTRY_TTL = 14400000; // 4 hours per symbol (reduces API usage)
 
 // In-memory cache (loaded from localStorage on init)
 let stockCache = {};
@@ -923,6 +923,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start scanning after 2 seconds
     setTimeout(() => runFullScan(), 2000);
 
-    // Rescan every 5 minutes (individual cache entries expire, no blanket clear)
-    setInterval(() => runFullScan(), 300000);
+    // Rescan every 4 hours (cache entries last 4 hours, reduces API usage)
+    setInterval(() => runFullScan(), 14400000);
 });
