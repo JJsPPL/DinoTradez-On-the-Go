@@ -2,10 +2,8 @@
 node_modules/
 package-lock.json
 
-# Environment variables and config
+# Environment variables
 .env
-config.js
-config.json
 
 # Build files
 dist/
