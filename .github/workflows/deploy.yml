@@ -28,10 +28,11 @@ jobs:
         run: |
           mkdir -p dist
           cp public/index.html dist/
-          cp public/script.js dist/
           cp public/styles.css dist/
+          cp public/app.js dist/
+          cp public/config.js dist/
           cp public/CNAME dist/
-          cp -r public/assets dist/ 2>/dev/null || true
+          cp public/favicon.ico dist/ 2>/dev/null || true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

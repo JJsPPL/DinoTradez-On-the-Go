@@ -3,16 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DinoTradez - Stock Trading</title>
+    <title>DinoTradez - Stock Trading Intelligence</title>
+    <meta name="description" content="Track and analyze stock market data in real-time with DinoTradez">
     <link rel="stylesheet" href="styles.css">
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Disclaimer Overlay -->
+    <div id="disclaimer-overlay" class="disclaimer-overlay">
+        <div class="disclaimer-modal">
+            <div class="disclaimer-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h2>Important Disclaimer</h2>
+            </div>
+            <div class="disclaimer-body">
+                <p>The use of DinoTradez site does not guarantee profitable results. This site should not be used as a standalone analysis tool. It is essential to combine it with other forms of analysis, such as fundamental analysis, technical analysis, risk management strategies, and awareness of current market conditions. Always conduct thorough research.</p>
+                <p>Note: The effectiveness of DinoTradez site can vary based on market conditions and individual trading styles. It's crucial to test strategies thoroughly using historical data before applying them in live trading scenarios.</p>
+                <p>Disclaimer: Trading financial instruments involves substantial risk and may not be suitable for all investors. Past performance is not indicative of future results. This website is provided for informational, educational and most importantly entertainment purposes only and should not be considered investment advice. Always conduct your own research before making any financial decisions. DinoTradez is not liable for your actions.</p>
+            </div>
+            <button id="disclaimer-accept" class="btn btn-primary btn-large">I Understand & Accept</button>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
@@ -20,20 +35,34 @@
                 <i class="fas fa-chart-line" style="font-size: 28px; color: #4ade80;"></i>
                 <h1>DinoTradez</h1>
             </div>
-            <div class="navbar-menu">
+            <div class="navbar-menu" id="navbar-menu">
                 <a href="#dashboard" class="active">Dashboard</a>
                 <a href="#markets">Markets</a>
                 <a href="#crypto">Crypto</a>
                 <a href="#commodities">Commodities</a>
+                <a href="#intelligence">Intelligence</a>
                 <a href="#lottopicks">Lotto Picks</a>
             </div>
             <div class="navbar-actions">
                 <button class="theme-toggle" id="theme-toggle">
                     <i class="fas fa-sun"></i>
                 </button>
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="#dashboard" class="active">Dashboard</a>
+        <a href="#markets">Markets</a>
+        <a href="#crypto">Crypto</a>
+        <a href="#commodities">Commodities</a>
+        <a href="#intelligence">Intelligence</a>
+        <a href="#lottopicks">Lotto Picks</a>
+    </div>
 
     <!-- Hero Section -->
     <header class="hero">
@@ -49,50 +78,71 @@
         <div class="container">
             <div class="section-header">
                 <h2>Market Overview</h2>
-                <p>Track major indices and trending stocks</p>
+                <p>Track major indices and trending stocks &mdash; Live data via Alpha Vantage</p>
             </div>
             <div class="market-indices">
-                <div class="market-card">
+                <div class="market-card" data-symbol="SPY" data-type="stock">
                     <div class="market-info">
-                        <h3>S&P 500</h3>
-                        <p class="market-value">4,927.11</p>
+                        <h3>S&P 500 (SPY)</h3>
+                        <p class="market-value">Loading...</p>
                     </div>
-                    <div class="market-change positive">
-                        <p>+12.37 (0.25%)</p>
+                    <div class="market-change">
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-chart-line"></i>
                     </div>
                 </div>
-                <div class="market-card">
+                <div class="market-card" data-symbol="QQQ" data-type="stock">
                     <div class="market-info">
-                        <h3>Nasdaq</h3>
-                        <p class="market-value">15,982.01</p>
+                        <h3>NASDAQ (QQQ)</h3>
+                        <p class="market-value">Loading...</p>
                     </div>
-                    <div class="market-change positive">
-                        <p>+87.64 (0.55%)</p>
+                    <div class="market-change">
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-chart-line"></i>
                     </div>
                 </div>
-                <div class="market-card">
+                <div class="market-card" data-symbol="DIA" data-type="stock">
                     <div class="market-info">
-                        <h3>Dow Jones</h3>
-                        <p class="market-value">38,612.24</p>
+                        <h3>DOW (DIA)</h3>
+                        <p class="market-value">Loading...</p>
                     </div>
-                    <div class="market-change negative">
-                        <p>-34.12 (0.09%)</p>
+                    <div class="market-change">
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-chart-line"></i>
                     </div>
                 </div>
-                <div class="market-card">
+                <div class="market-card" data-symbol="IWM" data-type="stock">
                     <div class="market-info">
-                        <h3>Russell 2000</h3>
-                        <p class="market-value">2,008.36</p>
+                        <h3>Russell 2000 (IWM)</h3>
+                        <p class="market-value">Loading...</p>
                     </div>
-                    <div class="market-change positive">
-                        <p>+11.98 (0.60%)</p>
+                    <div class="market-change">
+                        <p class="market-change-text">--</p>
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="market-card" data-symbol="VIXY" data-type="stock">
+                    <div class="market-info">
+                        <h3>VIX (VIXY)</h3>
+                        <p class="market-value">Loading...</p>
+                    </div>
+                    <div class="market-change">
+                        <p class="market-change-text">--</p>
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="market-card" data-symbol="TLT" data-type="stock">
+                    <div class="market-info">
+                        <h3>20Y Treasury (TLT)</h3>
+                        <p class="market-value">Loading...</p>
+                    </div>
+                    <div class="market-change">
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-chart-line"></i>
                     </div>
                 </div>
             </div>
+            <div class="last-updated" id="market-last-updated"></div>
         </div>
     </section>
 
@@ -104,63 +154,63 @@
                 <p>Live prices for major cryptocurrencies</p>
             </div>
             <div class="market-indices crypto-grid">
-                <div class="market-card crypto-card" data-symbol="BTC-USD">
+                <div class="market-card crypto-card" data-symbol="BTC" data-type="crypto">
                     <div class="market-info">
                         <h3>Bitcoin</h3>
-                        <p class="market-value crypto-price">--</p>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="crypto-change">--</p>
+                        <p class="market-change-text">--</p>
                         <i class="fab fa-bitcoin"></i>
                     </div>
                 </div>
-                <div class="market-card crypto-card" data-symbol="ETH-USD">
+                <div class="market-card crypto-card" data-symbol="ETH" data-type="crypto">
                     <div class="market-info">
                         <h3>Ethereum</h3>
-                        <p class="market-value crypto-price">--</p>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="crypto-change">--</p>
+                        <p class="market-change-text">--</p>
                         <i class="fab fa-ethereum"></i>
                     </div>
                 </div>
-                <div class="market-card crypto-card" data-symbol="BNB-USD">
+                <div class="market-card crypto-card" data-symbol="BNB" data-type="crypto">
                     <div class="market-info">
                         <h3>BNB</h3>
-                        <p class="market-value crypto-price">--</p>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="crypto-change">--</p>
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-coins"></i>
                     </div>
                 </div>
-                <div class="market-card crypto-card" data-symbol="SOL-USD">
+                <div class="market-card crypto-card" data-symbol="SOL" data-type="crypto">
                     <div class="market-info">
                         <h3>Solana</h3>
-                        <p class="market-value crypto-price">--</p>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="crypto-change">--</p>
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-sun"></i>
                     </div>
                 </div>
-                <div class="market-card crypto-card" data-symbol="XRP-USD">
+                <div class="market-card crypto-card" data-symbol="XRP" data-type="crypto">
                     <div class="market-info">
                         <h3>XRP</h3>
-                        <p class="market-value crypto-price">--</p>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="crypto-change">--</p>
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-water"></i>
                     </div>
                 </div>
-                <div class="market-card crypto-card" data-symbol="DOGE-USD">
+                <div class="market-card crypto-card" data-symbol="DOGE" data-type="crypto">
                     <div class="market-info">
                         <h3>Dogecoin</h3>
-                        <p class="market-value crypto-price">--</p>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="crypto-change">--</p>
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-dog"></i>
                     </div>
                 </div>
@@ -173,57 +223,57 @@
         <div class="container">
             <div class="section-header">
                 <h2><i class="fas fa-gem" style="color: #ffd700;"></i> Commodities</h2>
-                <p>Live prices for precious metals</p>
+                <p>Live prices via commodity ETFs</p>
             </div>
             <div class="market-indices commodities-grid">
-                <div class="market-card commodity-card" data-symbol="GC=F">
+                <div class="market-card commodity-card" data-symbol="GLD" data-type="stock">
                     <div class="market-info">
-                        <h3>Gold</h3>
-                        <p class="market-value commodity-price">--</p>
+                        <h3>Gold (GLD)</h3>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="commodity-change">--</p>
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-coins" style="color: #ffd700;"></i>
                     </div>
                 </div>
-                <div class="market-card commodity-card" data-symbol="SI=F">
+                <div class="market-card commodity-card" data-symbol="SLV" data-type="stock">
                     <div class="market-info">
-                        <h3>Silver</h3>
-                        <p class="market-value commodity-price">--</p>
+                        <h3>Silver (SLV)</h3>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="commodity-change">--</p>
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-coins" style="color: #c0c0c0;"></i>
                     </div>
                 </div>
-                <div class="market-card commodity-card" data-symbol="HG=F">
+                <div class="market-card commodity-card" data-symbol="CPER" data-type="stock">
                     <div class="market-info">
-                        <h3>Copper</h3>
-                        <p class="market-value commodity-price">--</p>
+                        <h3>Copper (CPER)</h3>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="commodity-change">--</p>
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-coins" style="color: #b87333;"></i>
                     </div>
                 </div>
-                <div class="market-card commodity-card" data-symbol="PL=F">
+                <div class="market-card commodity-card" data-symbol="PPLT" data-type="stock">
                     <div class="market-info">
-                        <h3>Platinum</h3>
-                        <p class="market-value commodity-price">--</p>
+                        <h3>Platinum (PPLT)</h3>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="commodity-change">--</p>
+                        <p class="market-change-text">--</p>
                         <i class="fas fa-gem" style="color: #e5e4e2;"></i>
                     </div>
                 </div>
-                <div class="market-card commodity-card" data-symbol="PA=F">
+                <div class="market-card commodity-card" data-symbol="USO" data-type="stock">
                     <div class="market-info">
-                        <h3>Palladium</h3>
-                        <p class="market-value commodity-price">--</p>
+                        <h3>Crude Oil (USO)</h3>
+                        <p class="market-value">Loading...</p>
                     </div>
                     <div class="market-change">
-                        <p class="commodity-change">--</p>
-                        <i class="fas fa-gem" style="color: #cec8c8;"></i>
+                        <p class="market-change-text">--</p>
+                        <i class="fas fa-oil-can" style="color: #8B4513;"></i>
                     </div>
                 </div>
             </div>
@@ -239,127 +289,38 @@
             </div>
             <div class="watchlist-container">
                 <div class="search-box">
-                    <input type="text" placeholder="Enter stock symbol (e.g., AAPL)" class="search-input">
-                    <button class="search-button">Add to Watchlist</button>
+                    <input type="text" placeholder="Enter stock symbol (e.g., AAPL)" class="search-input" id="stock-search-input">
+                    <button class="search-button" id="stock-search-btn">Add to Watchlist</button>
                 </div>
                 <div class="table-wrapper">
-                    <table class="data-table">
+                    <table class="data-table" id="watchlist-table">
                         <thead>
                             <tr>
                                 <th>Symbol</th>
                                 <th>Last</th>
                                 <th>Net Chng</th>
                                 <th>%Change</th>
-                                <th>Shares</th>
-                                <th>Auth</th>
-                                <th>Market Cap</th>
-                                <th>MC/CE</th>
                                 <th>Volume</th>
-                                <th>Avg Vol</th>
-                                <th>Rel Vol</th>
-                                <th>DP %</th>
+                                <th>Prev Close</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td class="symbol-col">AAPL</td>
-                                <td>175.42</td>
-                                <td class="positive">+2.77</td>
-                                <td class="positive">+1.58%</td>
-                                <td>15.7B</td>
-                                <td>50.0B</td>
-                                <td>2.74T</td>
-                                <td>28.65</td>
-                                <td>55.92M</td>
-                                <td>61.54M</td>
-                                <td>0.91</td>
-                                <td>42.8%</td>
-                            </tr>
-                            <tr>
-                                <td class="symbol-col">NVDA</td>
-                                <td>681.22</td>
-                                <td class="positive">+10.72</td>
-                                <td class="positive">+1.60%</td>
-                                <td>2.47B</td>
-                                <td>4.0B</td>
-                                <td>1.68T</td>
-                                <td>51.24</td>
-                                <td>43.52M</td>
-                                <td>47.89M</td>
-                                <td>0.91</td>
-                                <td>46.2%</td>
-                            </tr>
-                            <tr>
-                                <td class="symbol-col">TSLA</td>
-                                <td>273.58</td>
-                                <td class="negative">-7.41</td>
-                                <td class="negative">-2.64%</td>
-                                <td>3.19B</td>
-                                <td>6.0B</td>
-                                <td>872.48B</td>
-                                <td>18.75</td>
-                                <td>118.54M</td>
-                                <td>97.12M</td>
-                                <td>1.22</td>
-                                <td>48.7%</td>
-                            </tr>
-                            <tr>
-                                <td class="symbol-col">MSFT</td>
-                                <td>310.87</td>
-                                <td class="positive">+2.65</td>
-                                <td class="positive">+0.86%</td>
-                                <td>7.43B</td>
-                                <td>24.0B</td>
-                                <td>2.31T</td>
-                                <td>12.43</td>
-                                <td>23.79M</td>
-                                <td>26.18M</td>
-                                <td>0.91</td>
-                                <td>38.5%</td>
-                            </tr>
-                            <tr>
-                                <td class="symbol-col">AMZN</td>
-                                <td>129.83</td>
-                                <td class="positive">+1.36</td>
-                                <td class="positive">+1.06%</td>
-                                <td>10.42B</td>
-                                <td>25.0B</td>
-                                <td>1.35T</td>
-                                <td>13.27</td>
-                                <td>47.82M</td>
-                                <td>51.33M</td>
-                                <td>0.93</td>
-                                <td>45.1%</td>
-                            </tr>
-                            <tr>
-                                <td class="symbol-col">META</td>
-                                <td>324.62</td>
-                                <td class="positive">+4.52</td>
-                                <td class="positive">+1.41%</td>
-                                <td>2.55B</td>
-                                <td>10.0B</td>
-                                <td>828.15B</td>
-                                <td>5.96</td>
-                                <td>14.68M</td>
-                                <td>16.23M</td>
-                                <td>0.90</td>
-                                <td>39.8%</td>
-                            </tr>
+                        <tbody id="watchlist-tbody">
                         </tbody>
                     </table>
                 </div>
+                <p class="watchlist-hint">Right-click a row to remove it. Data refreshes every 5 minutes.</p>
             </div>
         </div>
     </section>
-    
+
     <!-- Market Intelligence Section -->
-    <section class="market-intelligence">
+    <section class="market-intelligence" id="intelligence">
         <div class="container">
             <div class="section-header">
                 <h2>Market Intelligence</h2>
                 <p>Stay informed with critical market data</p>
             </div>
-            
+
             <div class="intelligence-grid">
                 <!-- SEC Edgar S-3 Filings -->
                 <div class="intelligence-card">
@@ -374,7 +335,7 @@
                                 <div class="filing-type">S-3ASR</div>
                                 <div class="filing-date">2025-04-10</div>
                             </div>
-                            <a href="#" class="filing-link"><i class="fas fa-external-link-alt"></i></a>
+                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=palantir&CIK=&type=S-3&dateb=&owner=include&count=10&search_text=&action=getcompany" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
                         </div>
                         <div class="filing-item">
                             <div class="filing-company">SoFi Technologies, Inc. (SOFI)</div>
@@ -382,7 +343,7 @@
                                 <div class="filing-type">S-3</div>
                                 <div class="filing-date">2025-04-09</div>
                             </div>
-                            <a href="#" class="filing-link"><i class="fas fa-external-link-alt"></i></a>
+                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=sofi&CIK=&type=S-3&dateb=&owner=include&count=10&search_text=&action=getcompany" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
                         </div>
                         <div class="filing-item">
                             <div class="filing-company">Lucid Group, Inc. (LCID)</div>
@@ -390,7 +351,7 @@
                                 <div class="filing-type">S-3ASR</div>
                                 <div class="filing-date">2025-04-08</div>
                             </div>
-                            <a href="#" class="filing-link"><i class="fas fa-external-link-alt"></i></a>
+                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=lucid&CIK=&type=S-3&dateb=&owner=include&count=10&search_text=&action=getcompany" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
                         </div>
                         <div class="filing-item">
                             <div class="filing-company">Rivian Automotive, Inc. (RIVN)</div>
@@ -398,7 +359,7 @@
                                 <div class="filing-type">S-3</div>
                                 <div class="filing-date">2025-04-07</div>
                             </div>
-                            <a href="#" class="filing-link"><i class="fas fa-external-link-alt"></i></a>
+                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=rivian&CIK=&type=S-3&dateb=&owner=include&count=10&search_text=&action=getcompany" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
                         </div>
                         <div class="filing-item">
                             <div class="filing-company">Beyond Meat, Inc. (BYND)</div>
@@ -406,19 +367,19 @@
                                 <div class="filing-type">S-3</div>
                                 <div class="filing-date">2025-04-05</div>
                             </div>
-                            <a href="#" class="filing-link"><i class="fas fa-external-link-alt"></i></a>
+                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=beyond+meat&CIK=&type=S-3&dateb=&owner=include&count=10&search_text=&action=getcompany" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
                         </div>
                     </div>
                     <div class="card-footer">
                         <a href="https://www.sec.gov/cgi-bin/browse-edgar?company=&CIK=&type=S-3&owner=include&count=40&action=getcurrent" class="view-all-link" target="_blank">View All S-3 Filings <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
-                
+
                 <!-- FINRA Short Interest -->
                 <div class="intelligence-card">
                     <div class="card-header">
                         <h3><i class="fas fa-chart-pie"></i> High Short Interest</h3>
-                        <span class="data-source">Source: FINRA (>1M Volume)</span>
+                        <span class="data-source">Source: FINRA (&gt;1M Volume)</span>
                     </div>
                     <div class="short-interest-filter">
                         <div class="filter-options">
@@ -428,7 +389,7 @@
                             </label>
                             <label>
                                 <input type="checkbox" id="volume-filter" checked>
-                                >1M Volume Only
+                                &gt;1M Volume Only
                             </label>
                         </div>
                     </div>
@@ -482,7 +443,7 @@
     <section class="data-section" id="darkpool">
         <div class="container">
             <div class="section-card">
-                <div class="section-header">
+                <div class="section-header" style="padding: 1.5rem;">
                     <h2>Dark Pool Activity</h2>
                     <span class="data-source">Latest Dark Pool Data</span>
                 </div>
@@ -530,9 +491,6 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="section-footer">
-                    <a href="#" class="view-all-link">View All Dark Pool Data <i class="fas fa-arrow-right"></i></a>
-                </div>
             </div>
         </div>
     </section>
@@ -541,7 +499,7 @@
     <section class="data-section highlight-section" id="lottopicks">
         <div class="container">
             <h2 class="section-title">Lotto Stock Picks</h2>
-            <p class="section-subtitle">Stocks with >1M volume and -90% to -99% change</p>
+            <p class="section-subtitle">Stocks with &gt;1M volume and -90% to -99% change</p>
             <div class="table-wrapper">
                 <table class="data-table">
                     <thead>
@@ -675,12 +633,26 @@
                             <td>0.91</td>
                             <td>46.2%</td>
                         </tr>
+                        <tr>
+                            <td class="symbol-col">DIS</td>
+                            <td>109.12</td>
+                            <td class="positive">+6.40</td>
+                            <td class="positive">+6.23%</td>
+                            <td>1.81B</td>
+                            <td>4.0B</td>
+                            <td>197.9B</td>
+                            <td>4.08</td>
+                            <td>47.4M</td>
+                            <td>6.92M</td>
+                            <td>6.92</td>
+                            <td>41.0%</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </section>
-    
+
     <!-- Bearish Watchlist Section -->
     <section class="data-section" id="bearish">
         <div class="container">
@@ -753,15 +725,23 @@
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- Footer with Full Disclaimer -->
     <footer class="footer">
         <div class="container">
+            <div class="footer-disclaimer">
+                <h3><i class="fas fa-exclamation-circle"></i> Important Notice</h3>
+                <p>The use of DinoTradez site does not guarantee profitable results. This site should not be used as a standalone analysis tool. It is essential to combine it with other forms of analysis, such as fundamental analysis, technical analysis, risk management strategies, and awareness of current market conditions. Always conduct thorough research.</p>
+                <p>Note: The effectiveness of DinoTradez site can vary based on market conditions and individual trading styles. It's crucial to test strategies thoroughly using historical data before applying them in live trading scenarios.</p>
+                <p>Disclaimer: Trading financial instruments involves substantial risk and may not be suitable for all investors. Past performance is not indicative of future results. This website is provided for informational, educational and most importantly entertainment purposes only and should not be considered investment advice. Always conduct your own research before making any financial decisions. DinoTradez is not liable for your actions.</p>
+            </div>
             <div class="footer-bottom">
                 <p>&copy; 2025 DinoTradez. All rights reserved.</p>
-                <p>Disclaimer: DinoTradez is for informational purposes only. Not financial advice.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script src="script.js"></script>
+    <!-- Scripts (no ES modules for GitHub Pages compatibility) -->
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
