@@ -1,12 +1,15 @@
 // DinoTradez - Real Scoring Algorithms & Live Data
-// Finnhub (stocks - FREE 60 calls/min), CoinGecko (crypto - FREE)
+// Stock data via secure API proxy, CoinGecko (crypto - FREE)
+// Intelligence: SEC EDGAR (S-3), Finnhub Metrics (short interest), FINRA (dark pool)
 // Scoring ported from src/pages/api/ TypeScript endpoints
 
 // ========================================
 // CONFIGURATION
 // ========================================
-const FINNHUB_API_KEY = 'd0ln0d9r01qpni304sdgd0ln0d9r01qpni304se0';
-const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
+// API proxy — keys are stored securely in the Cloudflare Worker, not in client code
+// IMPORTANT: After deploying your Worker, replace this URL with your Worker's URL
+// e.g. 'https://dinotradez-api.YOUR_SUBDOMAIN.workers.dev'
+const API_BASE_URL = 'https://dinotradez-api.jjsppl.workers.dev';
 const stockCache = {};
 const CACHE_DURATION = 300000; // 5 min cache
 
@@ -73,12 +76,12 @@ function isCached(symbol) {
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ========================================
-// FINNHUB API
+// STOCK QUOTE API (via secure Cloudflare Worker proxy)
 // ========================================
 async function fetchStockQuote(symbol) {
     if (isCached(symbol)) return stockCache[symbol].data;
     try {
-        const res = await fetch(`${FINNHUB_BASE_URL}/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`);
+        const res = await fetch(`${API_BASE_URL}/api/quote?symbol=${symbol}`);
         if (!res.ok) throw new Error(`API ${res.status}`);
         const d = await res.json();
         if (d && d.c && d.c > 0) {
@@ -183,7 +186,7 @@ async function runFullScan() {
     for (const sym of DARK_POOL_STOCKS) {
         if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
     }
-    scanDarkPool(); updateDarkPoolUI();
+    await scanDarkPool(); updateDarkPoolUI();
     updateScanStatus('Scanning bullish stocks (20 symbols)...');
 
     // Phase 3: Bullish
@@ -211,7 +214,7 @@ async function runFullScan() {
     for (const sym of SHORT_INTEREST_STOCKS) {
         if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
     }
-    scanShortInterest(); updateShortInterestUI();
+    await scanShortInterest(); updateShortInterestUI();
 
     var total = new Set([...MARKET_INDICES,...DARK_POOL_STOCKS,...BULLISH_STOCKS,...BEARISH_STOCKS,...LOTTO_STOCKS,...SHORT_INTEREST_STOCKS]).size;
     updateScanStatus('Scan complete - ' + total + ' symbols scanned at ' + new Date().toLocaleTimeString());
@@ -270,33 +273,85 @@ function scanLotto() {
     scannedStocks.lotto = r.sort((a, b) => b.score - a.score);
 }
 
-function scanDarkPool() {
+async function scanDarkPool() {
     const r = [];
+
+    // Try to get real institutional/ATS data from Worker
+    let atsData = null;
+    try {
+        const syms = DARK_POOL_STOCKS.join(',');
+        const res = await fetch(`${API_BASE_URL}/api/dark-pool?symbols=${syms}`);
+        if (res.ok) {
+            const json = await res.json();
+            atsData = {};
+            for (const item of (json.data || [])) {
+                if (item.atsPercent != null) atsData[item.symbol] = item;
+            }
+        }
+    } catch (e) { console.error('Dark pool API:', e); }
+
     for (const sym of DARK_POOL_STOCKS) {
         const q = stockCache[sym]?.data;
         if (!q || !q.price) continue;
-        const dpPct = estimateDarkPoolPercent(q);
-        const dpVol = q.volume * (dpPct / 100);
+
+        let dpPct, dpVol, source;
+        if (atsData && atsData[sym]) {
+            dpPct = atsData[sym].atsPercent;
+            dpVol = q.volume * (dpPct / 100);
+            source = atsData[sym].source || 'api';
+        } else {
+            dpPct = estimateDarkPoolPercent(q);
+            dpVol = q.volume * (dpPct / 100);
+            source = 'estimate';
+        }
+
         r.push({
             symbol: sym, darkPoolPercent: dpPct, dpVolume: dpVol,
             blockTrades: Math.floor(dpVol / 10000),
             anomaly: dpPct > 55 || dpPct < 30,
-            price: q.price, percentChange: q.percentChange
+            price: q.price, percentChange: q.percentChange,
+            source
         });
     }
     scannedStocks.darkPool = r.sort((a, b) => b.darkPoolPercent - a.darkPoolPercent);
 }
 
-function scanShortInterest() {
+async function scanShortInterest() {
     const r = [];
+
+    // Try to get real short interest data from Worker
+    let apiData = null;
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/short-interest`);
+        if (res.ok) {
+            const json = await res.json();
+            apiData = {};
+            for (const item of (json.data || [])) {
+                apiData[item.symbol] = item;
+            }
+        }
+    } catch (e) { console.error('Short interest API:', e); }
+
     for (const sym of SHORT_INTEREST_STOCKS) {
         const q = stockCache[sym]?.data;
         if (!q) continue;
-        const base = KNOWN_SHORT_INTEREST[sym] || 15;
+
+        let shortPercent, source, stale;
+        if (apiData && apiData[sym] && !apiData[sym].stale) {
+            shortPercent = apiData[sym].shortPercent;
+            source = apiData[sym].source || 'api';
+            stale = false;
+        } else {
+            shortPercent = KNOWN_SHORT_INTEREST[sym] || 15;
+            source = 'baseline';
+            stale = true;
+        }
+
         r.push({
-            symbol: sym, shortPercent: base + (Math.random() - 0.5) * 3,
+            symbol: sym, shortPercent,
             percentChange: q.percentChange || 0, volume: q.volume || 0,
-            price: q.price || 0, isLotto: (q.price || 0) < 5
+            price: q.price || 0, isLotto: (q.price || 0) < 5,
+            source, stale
         });
     }
     scannedStocks.shortInterest = r.sort((a, b) => b.shortPercent - a.shortPercent);
@@ -362,28 +417,48 @@ function updateDarkPoolUI() {
     if (!tb || !scannedStocks.darkPool.length) return;
     tb.innerHTML = scannedStocks.darkPool.map(s => {
         const anom = s.anomaly ? ' style="background:rgba(231,76,60,0.1);"' : '';
+        const pos = (s.percentChange || 0) >= 0;
+        const chgCls = pos ? 'positive' : 'negative';
+        const srcTag = s.source && s.source !== 'estimate'
+            ? '<span style="color:#4ade80;font-size:10px;margin-left:4px" title="Institutional ownership data">INST</span>'
+            : '<span style="color:#888;font-size:10px;margin-left:4px" title="Estimated from price action">EST</span>';
         return `<tr${anom}><td class="symbol-col">${s.symbol}</td>
-            <td>${s.darkPoolPercent.toFixed(1)}%</td>
+            <td>$${(s.price||0).toFixed(2)}</td>
+            <td class="${chgCls}">${pos?'+':''}${(s.percentChange||0).toFixed(2)}%</td>
+            <td>${s.darkPoolPercent.toFixed(1)}%${srcTag}</td>
             <td>${formatLargeNumber(s.dpVolume)}</td>
-            <td>${s.blockTrades}</td></tr>`;
+            <td>${s.blockTrades}</td>
+            <td>${s.anomaly ? '<span style="color:#e74c3c">ANOMALY</span>' : '<span style="color:#4ade80">NORMAL</span>'}</td></tr>`;
     }).join('');
 }
 
 function updateShortInterestUI() {
-    const c = document.querySelector('.short-interest-data');
+    const c = document.querySelector('#short-interest-list');
     if (!c || !scannedStocks.shortInterest.length) return;
-    c.innerHTML = `<div class="short-interest-header">
-        <div class="short-column">Symbol</div><div class="short-column">Short %</div>
-        <div class="short-column">Change</div><div class="short-column">Volume</div>
-    </div>` + scannedStocks.shortInterest.slice(0, 5).map(s => {
+
+    // Update source label
+    const srcLabel = document.querySelector('#si-source-label');
+    const hasReal = scannedStocks.shortInterest.some(s => s.source === 'finnhub');
+    if (srcLabel) srcLabel.textContent = hasReal
+        ? 'Source: Finnhub Metrics (real data)'
+        : 'Source: Baseline estimates (updated periodically)';
+
+    c.innerHTML = `<div class="short-interest-header" style="display:flex;gap:8px;padding:8px 12px;font-size:11px;color:#888;border-bottom:1px solid rgba(255,255,255,0.1)">
+        <div style="flex:1">Symbol</div><div style="flex:1">Short %</div>
+        <div style="flex:1">Change</div><div style="flex:1">Volume</div><div style="flex:0.5">Src</div>
+    </div>` + scannedStocks.shortInterest.slice(0, 8).map(s => {
         const pos = s.percentChange >= 0;
         const warn = s.shortPercent > 15 ? 'warning' : '';
         const lotto = s.isLotto ? 'lotto' : '';
-        return `<div class="short-interest-item ${lotto}">
-            <div class="short-column">${s.symbol}</div>
-            <div class="short-column ${warn}">${s.shortPercent.toFixed(2)}%</div>
-            <div class="short-column ${pos ? 'positive' : 'negative'}">${pos ? '+' : ''}${s.percentChange.toFixed(2)}%</div>
-            <div class="short-column">${formatLargeNumber(s.volume)}</div>
+        const srcBadge = s.source === 'finnhub'
+            ? '<span style="color:#4ade80;font-size:10px" title="Finnhub real data">FH</span>'
+            : '<span style="color:#888;font-size:10px" title="Baseline estimate">EST</span>';
+        return `<div class="short-interest-item ${lotto}" style="display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05)">
+            <div style="flex:1;font-weight:600">${s.symbol}</div>
+            <div style="flex:1" class="${warn}">${s.shortPercent.toFixed(2)}%</div>
+            <div style="flex:1" class="${pos ? 'positive' : 'negative'}">${pos ? '+' : ''}${s.percentChange.toFixed(2)}%</div>
+            <div style="flex:1">${formatLargeNumber(s.volume)}</div>
+            <div style="flex:0.5">${srcBadge}</div>
         </div>`;
     }).join('');
 }
@@ -490,41 +565,52 @@ async function updateCommodityPrices() {
 }
 
 // ========================================
-// MARKET INTELLIGENCE (SEC Filings)
+// MARKET INTELLIGENCE (Real SEC Filings via Worker proxy)
 // ========================================
 function initializeMarketIntelligence() {
     updateSECS3Filings();
     setInterval(updateSECS3Filings, 600000);
 }
 
-function updateSECS3Filings() {
-    const c = document.querySelector('.edgar-filings');
+async function updateSECS3Filings() {
+    const c = document.querySelector('#s3-filings');
     if (!c) return;
-    const companies = [
-        {symbol:'PLTR',company:'Palantir Technologies',type:'S-3ASR'},
-        {symbol:'SOFI',company:'SoFi Technologies',type:'S-3'},
-        {symbol:'RIVN',company:'Rivian Automotive',type:'S-3'},
-        {symbol:'LCID',company:'Lucid Group',type:'S-3ASR'},
-        {symbol:'NIO',company:'NIO Inc',type:'S-3'},
-        {symbol:'MARA',company:'Marathon Digital',type:'S-3'},
-        {symbol:'COIN',company:'Coinbase Global',type:'S-3ASR'},
-        {symbol:'HOOD',company:'Robinhood Markets',type:'S-3'}
-    ];
-    const today = new Date();
-    const filings = companies.slice(0, 5).map((f, i) => {
-        const d = new Date(today); d.setDate(d.getDate() - i * 2 - 1);
-        return { ...f, date: d.toISOString().split('T')[0],
-            url: `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${f.symbol}&type=S-3&dateb=&owner=include&count=10` };
-    });
-    c.innerHTML = filings.map(f => `
-        <div class="filing-item">
-            <div class="filing-company">${f.company} (${f.symbol})</div>
-            <div class="filing-details">
-                <div class="filing-type">${f.type}</div>
-                <div class="filing-date">${f.date}</div>
-            </div>
-            <a href="${f.url}" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
-        </div>`).join('');
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/filings/s3`);
+        if (!res.ok) throw new Error(`API ${res.status}`);
+        const data = await res.json();
+
+        if (!data.filings || data.filings.length === 0) {
+            c.innerHTML = '<p style="color:#888;padding:1rem;text-align:center">No recent S-3 filings found</p>';
+            return;
+        }
+
+        c.innerHTML = data.filings.slice(0, 8).map(f => `
+            <div class="filing-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.05)">
+                <div style="flex:1">
+                    <div style="font-weight:600;font-size:13px">${f.company}${f.symbol ? ' (' + f.symbol + ')' : ''}</div>
+                    <div style="display:flex;gap:12px;margin-top:4px;font-size:11px;color:#888">
+                        <span style="color:#fbbf24">${f.type}</span>
+                        <span>${f.date}</span>
+                        <span style="color:#4ade80;font-size:10px">${f.source === 'edgar-efts' ? 'EDGAR' : f.source === 'edgar-atom' ? 'RSS' : 'SEC'}</span>
+                    </div>
+                </div>
+                <a href="${f.url}" target="_blank" rel="noopener" style="color:#3b82f6;text-decoration:none;padding:4px 8px">
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+            </div>`).join('');
+
+        // Show data freshness
+        if (data.asOf) {
+            const age = Math.round((Date.now() - new Date(data.asOf).getTime()) / 60000);
+            const freshEl = c.parentElement?.querySelector('.intel-source');
+            if (freshEl) freshEl.textContent = `Source: SEC EDGAR (${age < 2 ? 'just now' : age + 'min ago'})`;
+        }
+    } catch (e) {
+        console.error('S-3 filings error:', e);
+        c.innerHTML = '<p style="color:#e74c3c;padding:1rem;text-align:center">Unable to load SEC filings — API proxy may not be configured</p>';
+    }
 }
 
 // ========================================

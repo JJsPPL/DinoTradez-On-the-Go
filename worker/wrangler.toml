@@ -1,0 +1,7 @@
+name = "dinotradez-api"
+main = "src/index.js"
+compatibility_date = "2025-12-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://dinotradez.com"
+SEC_USER_AGENT = "DinoTradez admin@dinotradez.com"

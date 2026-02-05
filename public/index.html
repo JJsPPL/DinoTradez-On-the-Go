@@ -4,515 +4,369 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DinoTradez - Stock Trading Intelligence</title>
-    <meta name="description" content="Track and analyze stock market data in real-time with DinoTradez">
+    <meta name="description" content="DinoTradez putting odds in your favor with probabilities on your side. Real-time stock scanning, composite scoring, and market intelligence.">
+    <meta name="keywords" content="stock scanner, swing trading, penny stocks, OTC, momentum trading, short squeeze, dark pool">
+    <meta property="og:title" content="DinoTradez - Stock Trading Intelligence">
+    <meta property="og:description" content="Putting odds in your favor with probabilities on your side">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dinotradez.com">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <!-- Disclaimer Overlay -->
-    <div id="disclaimer-overlay" class="disclaimer-overlay">
-        <div class="disclaimer-modal">
-            <div class="disclaimer-header">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h2>Important Disclaimer</h2>
-            </div>
-            <div class="disclaimer-body">
-                <p>The use of DinoTradez site does not guarantee profitable results. This site should not be used as a standalone analysis tool. It is essential to combine it with other forms of analysis, such as fundamental analysis, technical analysis, risk management strategies, and awareness of current market conditions. Always conduct thorough research.</p>
-                <p>Note: The effectiveness of DinoTradez site can vary based on market conditions and individual trading styles. It's crucial to test strategies thoroughly using historical data before applying them in live trading scenarios.</p>
-                <p>Disclaimer: Trading financial instruments involves substantial risk and may not be suitable for all investors. Past performance is not indicative of future results. This website is provided for informational, educational and most importantly entertainment purposes only and should not be considered investment advice. Always conduct your own research before making any financial decisions. DinoTradez is not liable for your actions.</p>
-            </div>
-            <button id="disclaimer-accept" class="btn btn-primary btn-large">I Understand & Accept</button>
+
+<!-- ============================== -->
+<!-- DISCLAIMER OVERLAY             -->
+<!-- ============================== -->
+<div id="disclaimer-overlay" class="disclaimer-overlay">
+    <div class="disclaimer-modal">
+        <div class="disclaimer-header">
+            <img src="logo.svg" alt="DinoTradez" class="disclaimer-logo">
+            <h2>Important Disclaimer</h2>
+        </div>
+        <div class="disclaimer-body">
+            <p>The use of DinoTradez site does not guarantee profitable results. This site should not be used as a standalone analysis tool. It is essential to combine it with other forms of analysis, such as fundamental analysis, technical analysis, risk management strategies, and awareness of current market conditions. Always conduct thorough research.</p>
+            <p><strong>Note:</strong> The effectiveness of DinoTradez site can vary based on market conditions and individual trading styles. It&rsquo;s crucial to test strategies thoroughly using historical data before applying them in live trading scenarios.</p>
+            <p><strong>Disclaimer:</strong> Trading financial instruments involves substantial risk and may not be suitable for all investors. Past performance is not indicative of future results. This website is provided for informational, educational and most importantly entertainment purposes only and should not be considered investment advice. Always conduct your own research before making any financial decisions. DinoTradez is not liable for your actions.</p>
+        </div>
+        <button id="disclaimer-accept" class="btn-accept">I Understand &amp; Accept</button>
+    </div>
+</div>
+
+<!-- ============================== -->
+<!-- NAVIGATION                     -->
+<!-- ============================== -->
+<nav class="navbar" id="navbar">
+    <div class="container nav-container">
+        <a href="#" class="nav-brand">
+            <img src="logo.svg" alt="DinoTradez" class="nav-logo">
+            <span class="nav-title">DinoTradez</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+            <a href="#dashboard" class="active">Dashboard</a>
+            <a href="#crypto">Crypto</a>
+            <a href="#commodities">Commodities</a>
+            <a href="#watchlist">Watchlist</a>
+            <a href="#intelligence">Intelligence</a>
+            <a href="#darkpool">Dark Pool</a>
+            <a href="#lottopicks">Lotto Picks</a>
+            <a href="#bullish">Bullish</a>
+            <a href="#bearish">Bearish</a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn-icon" id="refresh-btn" title="Force refresh all data"><i class="fas fa-sync-alt"></i></button>
+            <button class="btn-icon mobile-toggle" id="mobile-toggle"><i class="fas fa-bars"></i></button>
         </div>
     </div>
+</nav>
 
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="navbar-brand">
-                <i class="fas fa-chart-line" style="font-size: 28px; color: #4ade80;"></i>
-                <h1>DinoTradez</h1>
-            </div>
-            <div class="navbar-menu" id="navbar-menu">
-                <a href="#dashboard" class="active">Dashboard</a>
-                <a href="#markets">Markets</a>
-                <a href="#crypto">Crypto</a>
-                <a href="#commodities">Commodities</a>
-                <a href="#intelligence">Intelligence</a>
-                <a href="#darkpool">Dark Pool</a>
-                <a href="#lottopicks">Lotto Picks</a>
-                <a href="#bullish">Bullish</a>
-                <a href="#bearish">Bearish</a>
-            </div>
-            <div class="navbar-actions">
-                <button class="theme-toggle" id="theme-toggle">
-                    <i class="fas fa-sun"></i>
-                </button>
-                <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobile-menu">
+    <a href="#dashboard">Dashboard</a>
+    <a href="#crypto">Crypto</a>
+    <a href="#commodities">Commodities</a>
+    <a href="#watchlist">Watchlist</a>
+    <a href="#intelligence">Intelligence</a>
+    <a href="#darkpool">Dark Pool</a>
+    <a href="#lottopicks">Lotto Picks</a>
+    <a href="#bullish">Bullish</a>
+    <a href="#bearish">Bearish</a>
+</div>
+
+<!-- ============================== -->
+<!-- HERO                           -->
+<!-- ============================== -->
+<header class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <img src="logo.svg" alt="DinoTradez" class="hero-logo">
+            <h1>DinoTradez</h1>
+            <p class="hero-tagline">putting odds in your favor with probabilities on your side</p>
+            <p class="scan-status" id="scan-status">Initializing scanner...</p>
         </div>
-    </nav>
-
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobile-menu">
-        <a href="#dashboard" class="active">Dashboard</a>
-        <a href="#markets">Markets</a>
-        <a href="#crypto">Crypto</a>
-        <a href="#commodities">Commodities</a>
-        <a href="#intelligence">Intelligence</a>
-        <a href="#darkpool">Dark Pool</a>
-        <a href="#lottopicks">Lotto Picks</a>
-        <a href="#bullish">Bullish</a>
-        <a href="#bearish">Bearish</a>
     </div>
+</header>
 
-    <!-- Hero Section -->
-    <header class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>DinoTradez putting odds in your favor with probabilities on your side</h1>
-                <p id="scan-status" style="color: #4ade80; font-size: 14px; margin-top: 10px;">Initializing scanner...</p>
+<!-- ============================== -->
+<!-- MARKET OVERVIEW (Dashboard)    -->
+<!-- ============================== -->
+<section id="dashboard" class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2><i class="fas fa-chart-line"></i> Market Overview</h2>
+            <p>Track major indices &mdash; Live data via Finnhub API &mdash; <span id="last-update">--</span></p>
+        </div>
+        <div class="card-grid indices-grid" id="indices-grid">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+</section>
+
+<!-- ============================== -->
+<!-- CRYPTO                         -->
+<!-- ============================== -->
+<section id="crypto" class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2><i class="fab fa-bitcoin"></i> Cryptocurrency</h2>
+            <p>Live prices via CoinGecko API</p>
+        </div>
+        <div class="card-grid crypto-grid" id="crypto-grid">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+</section>
+
+<!-- ============================== -->
+<!-- COMMODITIES                    -->
+<!-- ============================== -->
+<section id="commodities" class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2><i class="fas fa-gem"></i> Commodities</h2>
+            <p>Live precious metals pricing</p>
+        </div>
+        <div class="card-grid commodity-grid" id="commodity-grid">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+</section>
+
+<!-- ============================== -->
+<!-- WATCHLIST                      -->
+<!-- ============================== -->
+<section id="watchlist" class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2><i class="fas fa-binoculars"></i> Stock Watchlist</h2>
+            <p>Add any stock symbol to track live data (right-click or double-click to remove)</p>
+        </div>
+        <div class="watchlist-controls">
+            <input type="text" id="watchlist-input" placeholder="Enter symbol (e.g. AAPL)" maxlength="10" autocomplete="off">
+            <button id="watchlist-add" class="btn-primary">Add to Watchlist</button>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table" id="watchlist-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Last</th>
+                        <th>Net Chng</th>
+                        <th>%Change</th>
+                        <th>Volume</th>
+                        <th>Avg Vol</th>
+                        <th>Rel Vol</th>
+                        <th>Market Cap</th>
+                    </tr>
+                </thead>
+                <tbody id="watchlist-body">
+                </tbody>
+            </table>
+        </div>
+        <p class="table-note">Right-click or double-click a row to remove it. Data refreshes every 5 minutes via Finnhub API.</p>
+    </div>
+</section>
+
+<!-- ============================== -->
+<!-- MARKET INTELLIGENCE            -->
+<!-- ============================== -->
+<section id="intelligence" class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2><i class="fas fa-brain"></i> Market Intelligence</h2>
+            <p>Stay informed with critical market data</p>
+        </div>
+        <div class="intel-grid">
+            <!-- S-3 Filings -->
+            <div class="intel-card">
+                <h3><i class="fas fa-file-alt"></i> Latest S-3 Offerings</h3>
+                <p class="intel-source">Source: SEC EDGAR</p>
+                <div id="s3-filings" class="intel-list">
+                    <div class="loading-spinner">Loading S-3 filings...</div>
+                </div>
+                <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&type=S-3&dateb=&owner=include&count=40&search_text=&action=getcompany" target="_blank" rel="noopener" class="btn-link">View All S-3 Filings on EDGAR <i class="fas fa-external-link-alt"></i></a>
+            </div>
+            <!-- Short Interest -->
+            <div class="intel-card">
+                <h3><i class="fas fa-chart-bar"></i> High Short Interest</h3>
+                <p class="intel-source" id="si-source-label">Source: Finnhub Metrics / Baseline estimates</p>
+                <div id="short-interest-list" class="intel-list">
+                    <div class="loading-spinner">Scanning short interest...</div>
+                </div>
+                <a href="https://otce.finra.org/otce/equityShortInterest" target="_blank" rel="noopener" class="btn-link">View FINRA Short Interest <i class="fas fa-external-link-alt"></i></a>
             </div>
         </div>
-    </header>
+    </div>
+</section>
 
-    <!-- Market Overview -->
-    <section class="market-overview" id="dashboard">
-        <div class="container">
-            <div class="section-header">
-                <h2>Market Overview</h2>
-                <p>Track major indices &mdash; Live data via Finnhub API</p>
-                <p id="last-update-time" style="font-size:12px;color:#888;margin-top:5px;"></p>
-            </div>
-            <div class="market-indices">
-                <div class="market-card" data-symbol="SPY">
-                    <div class="market-info">
-                        <h3>S&P 500 (SPY)</h3>
-                        <p class="market-value">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p>--</p>
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-                <div class="market-card" data-symbol="QQQ">
-                    <div class="market-info">
-                        <h3>NASDAQ (QQQ)</h3>
-                        <p class="market-value">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p>--</p>
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-                <div class="market-card" data-symbol="DIA">
-                    <div class="market-info">
-                        <h3>DOW (DIA)</h3>
-                        <p class="market-value">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p>--</p>
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-                <div class="market-card" data-symbol="IWM">
-                    <div class="market-info">
-                        <h3>Russell 2000 (IWM)</h3>
-                        <p class="market-value">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p>--</p>
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-                <div class="market-card" data-symbol="VIXY">
-                    <div class="market-info">
-                        <h3>VIX (VIXY)</h3>
-                        <p class="market-value">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p>--</p>
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-                <div class="market-card" data-symbol="TLT">
-                    <div class="market-info">
-                        <h3>20Y Treasury (TLT)</h3>
-                        <p class="market-value">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p>--</p>
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-            </div>
+<!-- ============================== -->
+<!-- DARK POOL                      -->
+<!-- ============================== -->
+<section id="darkpool" class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2><i class="fas fa-user-secret"></i> Dark Pool Activity</h2>
+            <p>Institutional Ownership &amp; ATS Estimates &mdash; AAPL, MSFT, GOOGL, AMZN, TSLA, NVDA, META, NFLX</p>
         </div>
-    </section>
-
-    <!-- Cryptocurrency Section -->
-    <section class="market-overview" id="crypto">
-        <div class="container">
-            <div class="section-header">
-                <h2><i class="fab fa-bitcoin" style="color: #f7931a;"></i> Cryptocurrency</h2>
-                <p>Live prices via CoinGecko API</p>
-            </div>
-            <div class="market-indices crypto-grid">
-                <div class="market-card crypto-card" data-symbol="BTC-USD">
-                    <div class="market-info">
-                        <h3>Bitcoin</h3>
-                        <p class="market-value crypto-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="crypto-change">--</p>
-                        <i class="fab fa-bitcoin"></i>
-                    </div>
-                </div>
-                <div class="market-card crypto-card" data-symbol="ETH-USD">
-                    <div class="market-info">
-                        <h3>Ethereum</h3>
-                        <p class="market-value crypto-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="crypto-change">--</p>
-                        <i class="fab fa-ethereum"></i>
-                    </div>
-                </div>
-                <div class="market-card crypto-card" data-symbol="BNB-USD">
-                    <div class="market-info">
-                        <h3>BNB</h3>
-                        <p class="market-value crypto-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="crypto-change">--</p>
-                        <i class="fas fa-coins"></i>
-                    </div>
-                </div>
-                <div class="market-card crypto-card" data-symbol="SOL-USD">
-                    <div class="market-info">
-                        <h3>Solana</h3>
-                        <p class="market-value crypto-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="crypto-change">--</p>
-                        <i class="fas fa-sun"></i>
-                    </div>
-                </div>
-                <div class="market-card crypto-card" data-symbol="XRP-USD">
-                    <div class="market-info">
-                        <h3>XRP</h3>
-                        <p class="market-value crypto-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="crypto-change">--</p>
-                        <i class="fas fa-water"></i>
-                    </div>
-                </div>
-                <div class="market-card crypto-card" data-symbol="DOGE-USD">
-                    <div class="market-info">
-                        <h3>Dogecoin</h3>
-                        <p class="market-value crypto-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="crypto-change">--</p>
-                        <i class="fas fa-dog"></i>
-                    </div>
-                </div>
-            </div>
+        <div class="table-wrap">
+            <table class="data-table" id="darkpool-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Price</th>
+                        <th>%Change</th>
+                        <th>DP %</th>
+                        <th>Est. DP Volume</th>
+                        <th>Block Trades</th>
+                        <th>Signal</th>
+                    </tr>
+                </thead>
+                <tbody id="darkpool-body">
+                    <tr><td colspan="7" class="loading-cell">Scanning dark pool activity...</td></tr>
+                </tbody>
+            </table>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Commodities Section -->
-    <section class="market-overview" id="commodities">
-        <div class="container">
-            <div class="section-header">
-                <h2><i class="fas fa-gem" style="color: #ffd700;"></i> Commodities</h2>
-                <p>Live precious metals pricing</p>
-            </div>
-            <div class="market-indices commodities-grid">
-                <div class="market-card commodity-card" data-symbol="GC=F">
-                    <div class="market-info">
-                        <h3>Gold</h3>
-                        <p class="market-value commodity-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="commodity-change">--</p>
-                        <i class="fas fa-coins" style="color: #ffd700;"></i>
-                    </div>
-                </div>
-                <div class="market-card commodity-card" data-symbol="SI=F">
-                    <div class="market-info">
-                        <h3>Silver</h3>
-                        <p class="market-value commodity-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="commodity-change">--</p>
-                        <i class="fas fa-coins" style="color: #c0c0c0;"></i>
-                    </div>
-                </div>
-                <div class="market-card commodity-card" data-symbol="HG=F">
-                    <div class="market-info">
-                        <h3>Copper</h3>
-                        <p class="market-value commodity-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="commodity-change">--</p>
-                        <i class="fas fa-coins" style="color: #b87333;"></i>
-                    </div>
-                </div>
-                <div class="market-card commodity-card" data-symbol="PL=F">
-                    <div class="market-info">
-                        <h3>Platinum</h3>
-                        <p class="market-value commodity-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="commodity-change">--</p>
-                        <i class="fas fa-gem" style="color: #e5e4e2;"></i>
-                    </div>
-                </div>
-                <div class="market-card commodity-card" data-symbol="PA=F">
-                    <div class="market-info">
-                        <h3>Palladium</h3>
-                        <p class="market-value commodity-price">Loading...</p>
-                    </div>
-                    <div class="market-change">
-                        <p class="commodity-change">--</p>
-                        <i class="fas fa-gem" style="color: #cec8c8;"></i>
-                    </div>
-                </div>
-            </div>
+<!-- ============================== -->
+<!-- LOTTO PICKS                    -->
+<!-- ============================== -->
+<section id="lottopicks" class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2><i class="fas fa-dice"></i> Lotto Stock Picks</h2>
+            <p>Composite Score: TTM Squeeze (25%) &bull; MACD Signal (20%) &bull; DTC/Short (20%) &bull; Volume (15%) &bull; MA Stack (20%)</p>
         </div>
-    </section>
-
-    <!-- Stock Watchlist Section -->
-    <section class="stock-watchlist" id="markets">
-        <div class="container">
-            <div class="section-header">
-                <h2>Stock Watchlist</h2>
-                <p>Add any stock symbol to track live data (right-click or double-click to remove)</p>
-            </div>
-            <div class="watchlist-container">
-                <div class="search-box">
-                    <input type="text" placeholder="Enter stock symbol (e.g., AAPL)" class="search-input" id="stock-search-input">
-                    <button class="search-button" id="stock-search-btn">Add to Watchlist</button>
-                </div>
-                <div class="table-wrapper">
-                    <table class="data-table" id="watchlist-table">
-                        <thead>
-                            <tr>
-                                <th>Symbol</th>
-                                <th>Last</th>
-                                <th>Net Chng</th>
-                                <th>%Change</th>
-                                <th>Shares</th>
-                                <th>Auth</th>
-                                <th>Market Cap</th>
-                                <th>MC/CE</th>
-                                <th>Volume</th>
-                                <th>Avg Vol</th>
-                                <th>Rel Vol</th>
-                                <th>DP %</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <p class="watchlist-hint">Right-click or double-click a row to remove it. Data refreshes every 5 minutes via Finnhub API.</p>
-            </div>
+        <div class="score-legend">
+            <span class="legend-item strong-buy"><i class="fas fa-fire"></i> 80+ Strong Buy</span>
+            <span class="legend-item buy"><i class="fas fa-arrow-up"></i> 60-79 Buy</span>
+            <span class="legend-item watch"><i class="fas fa-eye"></i> 40-59 Watch</span>
+            <span class="legend-item avoid"><i class="fas fa-ban"></i> &lt;40 Avoid</span>
         </div>
-    </section>
-
-    <!-- Market Intelligence Section -->
-    <section class="market-intelligence" id="intelligence">
-        <div class="container">
-            <div class="section-header">
-                <h2>Market Intelligence</h2>
-                <p>Stay informed with critical market data</p>
-            </div>
-
-            <div class="intelligence-grid">
-                <!-- SEC Edgar S-3 Filings (dynamically generated) -->
-                <div class="intelligence-card">
-                    <div class="card-header">
-                        <h3><i class="fas fa-file-contract"></i> Latest S-3 Offerings</h3>
-                        <span class="data-source">Source: SEC Edgar</span>
-                    </div>
-                    <div class="edgar-filings">
-                        <p style="color: #888; padding: 1rem; text-align: center;">Loading S-3 filings...</p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="https://www.sec.gov/cgi-bin/browse-edgar?company=&CIK=&type=S-3&owner=include&count=40&action=getcurrent" class="view-all-link" target="_blank">View All S-3 Filings <i class="fas fa-arrow-right"></i></a>
-                    </div>
-                </div>
-
-                <!-- FINRA Short Interest (dynamically generated) -->
-                <div class="intelligence-card">
-                    <div class="card-header">
-                        <h3><i class="fas fa-chart-pie"></i> High Short Interest</h3>
-                        <span class="data-source">Source: FINRA (&gt;1M Volume)</span>
-                    </div>
-                    <div class="short-interest-filter">
-                        <div class="filter-options">
-                            <label>
-                                <input type="checkbox" id="lotto-filter" checked>
-                                Show Lotto Picks (-90% to -99% change)
-                            </label>
-                            <label>
-                                <input type="checkbox" id="volume-filter" checked>
-                                &gt;1M Volume Only
-                            </label>
-                        </div>
-                    </div>
-                    <div class="short-interest-data">
-                        <p style="color: #888; padding: 1rem; text-align: center;">Scanning short interest...</p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="https://otce.finra.org/otce/equityShortInterest" class="view-all-link" target="_blank">View All Short Interest Data <i class="fas fa-arrow-right"></i></a>
-                    </div>
-                </div>
-            </div>
+        <div class="table-wrap">
+            <table class="data-table" id="lotto-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Last</th>
+                        <th>Net Chng</th>
+                        <th>%Change</th>
+                        <th>Score</th>
+                        <th>Signal</th>
+                        <th>Volume</th>
+                        <th>Rel Vol</th>
+                        <th>Market Cap</th>
+                        <th>Persistence</th>
+                    </tr>
+                </thead>
+                <tbody id="lotto-body">
+                    <tr><td colspan="10" class="loading-cell">Scanning lotto picks...</td></tr>
+                </tbody>
+            </table>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Dark Pool Activity Section (dynamically populated) -->
-    <section class="data-section" id="darkpool">
-        <div class="container">
-            <div class="section-card">
-                <div class="section-header" style="padding: 1.5rem;">
-                    <h2>Dark Pool Activity</h2>
-                    <span class="data-source">Estimated from institutional sentiment &mdash; AAPL, MSFT, GOOGL, AMZN, TSLA, NVDA, META, NFLX</span>
-                </div>
-                <div class="table-wrapper">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Symbol</th>
-                                <th>DP %</th>
-                                <th>DP Volume</th>
-                                <th>Block Trades</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="4" style="text-align:center;color:#888;">Scanning dark pool activity...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+<!-- ============================== -->
+<!-- BULLISH                        -->
+<!-- ============================== -->
+<section id="bullish" class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2><i class="fas fa-arrow-trend-up"></i> Bullish Watchlist</h2>
+            <p>Composite Score: Positive Momentum (30%) &bull; Volume Surge (25%) &bull; Institutional (25%) &bull; Price Level (20%)</p>
         </div>
-    </section>
-
-    <!-- Lotto Picks Section (dynamically populated via scoring algorithm) -->
-    <section class="data-section highlight-section" id="lottopicks">
-        <div class="container">
-            <h2 class="section-title">Lotto Stock Picks</h2>
-            <p class="section-subtitle">Scored by: Momentum (30%) + Volume (25%) + Price Range (25%) + Volatility (20%)</p>
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Last</th>
-                            <th>Net Chng</th>
-                            <th>%Change</th>
-                            <th>Shares</th>
-                            <th>Auth</th>
-                            <th>Market Cap</th>
-                            <th>MC/CE</th>
-                            <th>Volume</th>
-                            <th>Avg Vol</th>
-                            <th>Rel Vol</th>
-                            <th>DP %</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="12" style="text-align:center;color:#888;">Scanning lotto picks...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-wrap">
+            <table class="data-table" id="bullish-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Last</th>
+                        <th>Net Chng</th>
+                        <th>%Change</th>
+                        <th>Score</th>
+                        <th>Signal</th>
+                        <th>Volume</th>
+                        <th>Avg Vol</th>
+                        <th>Rel Vol</th>
+                        <th>DP %</th>
+                    </tr>
+                </thead>
+                <tbody id="bullish-body">
+                    <tr><td colspan="10" class="loading-cell">Scanning bullish stocks...</td></tr>
+                </tbody>
+            </table>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Bullish Watchlist Section (dynamically populated via scoring algorithm) -->
-    <section class="data-section" id="bullish">
-        <div class="container">
-            <h2 class="section-title">Bullish Watchlist</h2>
-            <p class="section-subtitle">Scored by: Positive Momentum (30%) + Volume (25%) + Sentiment (25%) + Price Level (20%)</p>
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Last</th>
-                            <th>Net Chng</th>
-                            <th>%Change</th>
-                            <th>Shares</th>
-                            <th>Auth</th>
-                            <th>Market Cap</th>
-                            <th>MC/CE</th>
-                            <th>Volume</th>
-                            <th>Avg Vol</th>
-                            <th>Rel Vol</th>
-                            <th>DP %</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="12" style="text-align:center;color:#888;">Scanning bullish stocks...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+<!-- ============================== -->
+<!-- BEARISH                        -->
+<!-- ============================== -->
+<section id="bearish" class="section">
+    <div class="container">
+        <div class="section-head">
+            <h2><i class="fas fa-arrow-trend-down"></i> Bearish Watchlist</h2>
+            <p>Composite Score: Negative Momentum (30%) &bull; Volume Surge (25%) &bull; Institutional (25%) &bull; Price Level (20%)</p>
         </div>
-    </section>
-
-    <!-- Bearish Watchlist Section (dynamically populated via scoring algorithm) -->
-    <section class="data-section" id="bearish">
-        <div class="container">
-            <h2 class="section-title">Bearish Watchlist</h2>
-            <p class="section-subtitle">Scored by: Negative Momentum (30%) + Volume (25%) + Sentiment (25%) + Price Level (20%)</p>
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Last</th>
-                            <th>Net Chng</th>
-                            <th>%Change</th>
-                            <th>Shares</th>
-                            <th>Auth</th>
-                            <th>Market Cap</th>
-                            <th>MC/CE</th>
-                            <th>Volume</th>
-                            <th>Avg Vol</th>
-                            <th>Rel Vol</th>
-                            <th>DP %</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="12" style="text-align:center;color:#888;">Scanning bearish stocks...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-wrap">
+            <table class="data-table" id="bearish-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Last</th>
+                        <th>Net Chng</th>
+                        <th>%Change</th>
+                        <th>Score</th>
+                        <th>Signal</th>
+                        <th>Volume</th>
+                        <th>Avg Vol</th>
+                        <th>Rel Vol</th>
+                        <th>DP %</th>
+                    </tr>
+                </thead>
+                <tbody id="bearish-body">
+                    <tr><td colspan="10" class="loading-cell">Scanning bearish stocks...</td></tr>
+                </tbody>
+            </table>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Footer with Full Disclaimer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-disclaimer">
-                <h3><i class="fas fa-exclamation-circle"></i> Important Notice</h3>
-                <p>The use of DinoTradez site does not guarantee profitable results. This site should not be used as a standalone analysis tool. It is essential to combine it with other forms of analysis, such as fundamental analysis, technical analysis, risk management strategies, and awareness of current market conditions. Always conduct thorough research.</p>
-                <p>Note: The effectiveness of DinoTradez site can vary based on market conditions and individual trading styles. It's crucial to test strategies thoroughly using historical data before applying them in live trading scenarios.</p>
-                <p>Disclaimer: Trading financial instruments involves substantial risk and may not be suitable for all investors. Past performance is not indicative of future results. This website is provided for informational, educational and most importantly entertainment purposes only and should not be considered investment advice. Always conduct your own research before making any financial decisions. DinoTradez is not liable for your actions.</p>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 DinoTradez. All rights reserved.</p>
-            </div>
+<!-- ============================== -->
+<!-- FOOTER                         -->
+<!-- ============================== -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-disclaimer">
+            <h3>Important Notice</h3>
+            <p>The use of DinoTradez site does not guarantee profitable results. This site should not be used as a standalone analysis tool. It is essential to combine it with other forms of analysis, such as fundamental analysis, technical analysis, risk management strategies, and awareness of current market conditions. Always conduct thorough research.</p>
+            <p>Note: The effectiveness of DinoTradez site can vary based on market conditions and individual trading styles. It&rsquo;s crucial to test strategies thoroughly using historical data before applying them in live trading scenarios.</p>
+            <p>Disclaimer: Trading financial instruments involves substantial risk and may not be suitable for all investors. Past performance is not indicative of future results. This website is provided for informational, educational and most importantly entertainment purposes only and should not be considered investment advice. Always conduct your own research before making any financial decisions. DinoTradez is not liable for your actions.</p>
         </div>
-    </footer>
 
-    <script src="script.js"></script>
+        <div class="footer-tradingview">
+            <a href="https://www.tradingview.com/pricing/?share_your_love=DinoTradez" target="_blank" rel="noopener" class="tv-link">
+                <img src="logo.svg" alt="DinoTradez" class="tv-link-logo">
+                <span class="tv-link-text">
+                    <strong>Free Trading Indicators on TradingView</strong>
+                    <small>Get DinoTradez custom indicators &mdash; QMI, Trendinator, Heikin Ashi Smoothed &amp; more</small>
+                </span>
+                <i class="fas fa-external-link-alt tv-link-arrow"></i>
+            </a>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 DinoTradez. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
 </body>
 </html>
