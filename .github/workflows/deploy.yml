@@ -29,8 +29,7 @@ jobs:
           mkdir -p dist
           cp public/index.html dist/
           cp public/styles.css dist/
-          cp public/app.js dist/
-          cp public/config.js dist/
+          cp public/script.js dist/
           cp public/CNAME dist/
           cp public/favicon.ico dist/ 2>/dev/null || true
 

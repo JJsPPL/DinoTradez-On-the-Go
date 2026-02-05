@@ -27,7 +27,7 @@ const LOTTO_STOCKS = [
 ];
 const DARK_POOL_STOCKS = ['AAPL','MSFT','GOOGL','AMZN','TSLA','NVDA','META','NFLX'];
 const SHORT_INTEREST_STOCKS = ['GME','AMC','KOSS','CVNA','BYND','UPST','SPCE','MARA','ATER','CLOV'];
-const MARKET_INDICES = ['SPY','QQQ','DIA','IWM'];
+const MARKET_INDICES = ['SPY','QQQ','DIA','IWM','VIXY','TLT'];
 
 const KNOWN_SHORT_INTEREST = {
     'GME':20,'AMC':18,'KOSS':15,'CVNA':25,'BYND':35,
@@ -170,36 +170,42 @@ function estimateDarkPoolPercent(q) {
 // ========================================
 async function runFullScan() {
     console.log('Running full scan with real scoring...');
+    updateScanStatus('Scanning market indices...');
 
     // Phase 1: Market Indices
     for (const sym of MARKET_INDICES) {
         if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
     }
     updateMarketOverview();
+    updateScanStatus('Scanning dark pool activity...');
 
     // Phase 2: Dark Pool (overlaps with bullish)
     for (const sym of DARK_POOL_STOCKS) {
         if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
     }
     scanDarkPool(); updateDarkPoolUI();
+    updateScanStatus('Scanning bullish stocks (20 symbols)...');
 
     // Phase 3: Bullish
     for (const sym of BULLISH_STOCKS) {
         if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
     }
     scanBullish(); updateBullishUI();
+    updateScanStatus('Scanning bearish stocks (20 symbols)...');
 
     // Phase 4: Bearish
     for (const sym of BEARISH_STOCKS) {
         if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
     }
     scanBearish(); updateBearishUI();
+    updateScanStatus('Scoring lotto picks (20 symbols)...');
 
     // Phase 5: Lotto (heavy overlap with bearish)
     for (const sym of LOTTO_STOCKS) {
         if (!isCached(sym)) { await fetchStockQuote(sym); await delay(1100); }
     }
     scanLotto(); updateLottoUI();
+    updateScanStatus('Scanning short interest (10 symbols)...');
 
     // Phase 6: Short Interest
     for (const sym of SHORT_INTEREST_STOCKS) {
@@ -207,6 +213,8 @@ async function runFullScan() {
     }
     scanShortInterest(); updateShortInterestUI();
 
+    var total = new Set([...MARKET_INDICES,...DARK_POOL_STOCKS,...BULLISH_STOCKS,...BEARISH_STOCKS,...LOTTO_STOCKS,...SHORT_INTEREST_STOCKS]).size;
+    updateScanStatus('Scan complete - ' + total + ' symbols scanned at ' + new Date().toLocaleTimeString());
     console.log('Full scan complete');
 }
 
@@ -657,10 +665,39 @@ function updateLastRefreshTime() {
 }
 
 // ========================================
+// DISCLAIMER OVERLAY
+// ========================================
+function initializeDisclaimerOverlay() {
+    const overlay = document.getElementById('disclaimer-overlay');
+    const acceptBtn = document.getElementById('disclaimer-accept');
+    if (!overlay || !acceptBtn) return;
+    if (localStorage.getItem('dinoDisclaimerAccepted') === 'true') {
+        overlay.style.display = 'none';
+        return;
+    }
+    overlay.style.display = 'flex';
+    acceptBtn.addEventListener('click', function() {
+        localStorage.setItem('dinoDisclaimerAccepted', 'true');
+        overlay.style.opacity = '0';
+        overlay.style.transition = 'opacity 0.3s ease';
+        setTimeout(function() { overlay.style.display = 'none'; }, 300);
+    });
+}
+
+// ========================================
+// SCAN STATUS UPDATES
+// ========================================
+function updateScanStatus(msg) {
+    var el = document.getElementById('scan-status');
+    if (el) el.textContent = msg;
+}
+
+// ========================================
 // MAIN INIT
 // ========================================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DinoTradez initializing with real scoring algorithms...');
+    initializeDisclaimerOverlay();
     initializeNavigation();
     initializeThemeToggle();
     initializeSmoothScrolling();
