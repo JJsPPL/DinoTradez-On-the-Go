@@ -6,7 +6,7 @@
 // ========================================
 // CONFIGURATION
 // ========================================
-const FINNHUB_API_KEY = 'd62ehn1r01qlugepo5ugd62ehn1r01qlugepo5v0';
+const FINNHUB_API_KEY = 'd62v5gpr01qnpqnv7c8gd62v5gpr01qnpqnv7c90';
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
 
 const CACHE_KEY = 'dinoTradez_stockCache';
