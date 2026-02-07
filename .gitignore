@@ -14,6 +14,9 @@ worker/.wrangler/
 dist/
 build/
 
+# Source files (keep minified only in repo)
+public/script.src.js
+
 # IDE and editor files
 .vscode/
 .idea/
