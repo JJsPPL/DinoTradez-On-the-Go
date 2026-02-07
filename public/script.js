@@ -33,34 +33,76 @@ function saveCacheToStorage() {
 }
 
 // ========================================
-// STOCK LISTS
+// STOCK UNIVERSES — large pools scanned & filtered each load
 // ========================================
-const BULLISH_STOCKS = [
+
+// Penny / micro-cap universe ($0.0001-$5 candidates) — scanned for Lotto Picks
+const LOTTO_UNIVERSE = [
+    'SNDL','CLOV','WISH','FCEL','TELL','MULN','NKLA','WKHS','GOEV','FFIE',
+    'ATER','DNA','MNMD','TLRY','ACB','OGI','HEXO','CENN','HCMC','NAKD',
+    'BBIG','APRN','BOXD','OPEN','MMAT','GEVO','KOSS','REI','SOS','ZOM',
+    'SOLO','IDEX','BNGO','SENS','PROG','CTRM','SHIP','ABEV','NOK','PLTR',
+    'SIRI','GRAB','PSNY','LCID','RIVN','FSR','XPEV','NIO','LI','BYDDY',
+    'BITF','HUT','MARA','RIOT','BTBT','CLSK','CIFR','WULF','IREN','CORZ',
+    'SOFI','UPST','NU','HOOD','AFRM','UWMC','RKT','COUR','BKKT','BTCS',
+    'SAVA','PRAX','VKTX','MDGL','APLT','CRXT','OCEA','SLRX','DARE','SINT',
+    'QS','MVST','DCRC','HYLN','REE','GOEV','ARVL','SEV','PSNY','PTRA',
+    'BNGO','GNOM','CRSP','EDIT','NTLA','BEAM','VERV','DTIL','GRNA','RLAY',
+    'VERB','CLOV','GREE','BBIG','PAYO','ME','IQ','FUBO','SKLZ','DKNG',
+    'PENN','RSI','GENI','BETZ','MYPS','GMBL','SBET','GAN','ELYS','AGS',
+    'WISA','CSSE','CMPO','SOUN','DM','ASTR','SPCE','VORB','RKLB','LUNR',
+    'MAXN','ARRY','RUN','NOVA','ENPH','SEDG','FSLR','CSIQ','JKS','DQ'
+];
+
+// Broad market universe — scanned for Bullish & Bearish signals
+const SCAN_UNIVERSE = [
     'AAPL','MSFT','GOOGL','AMZN','TSLA','NVDA','META','NFLX','ADBE','CRM',
-    'PYPL','INTC','AMD','QCOM','AVGO','TXN','MU','AMAT','KLAC','LRCX'
-];
-const BEARISH_STOCKS = [
+    'PYPL','INTC','AMD','QCOM','AVGO','TXN','MU','AMAT','KLAC','LRCX',
     'XOM','CVX','COP','EOG','OXY','SLB','HAL','BKR','NOV','FTI',
-    'WFRD','EXE','DVN','APA','MRO','KMI','PSX','VLO','MPC','HES'
+    'WFRD','DVN','APA','MRO','KMI','PSX','VLO','MPC','HES','PXD',
+    'JPM','BAC','WFC','GS','MS','C','SCHW','USB','BK','AXP',
+    'JNJ','PFE','UNH','ABBV','MRK','LLY','TMO','ABT','BMY','GILD',
+    'HD','LOW','TGT','WMT','COST','AMZN','SBUX','NKE','MCD','YUM',
+    'DIS','CMCSA','T','VZ','TMUS','CHTR','NFLX','PARA','WBD','FOXA',
+    'BA','LMT','RTX','NOC','GD','HII','TDG','HWM','TXT','CW',
+    'CAT','DE','MMM','GE','HON','EMR','ROK','ETN','PH','ITW',
+    'V','MA','SQ','COIN','AFRM','SOFI','HOOD','UPST','NU','BILL',
+    'SNOW','PLTR','DDOG','NET','CRWD','ZS','PANW','FTNT','S','OKTA',
+    'AI','PATH','U','RBLX','TTWO','EA','ATVI','MTCH','SNAP','PINS',
+    'UBER','LYFT','DASH','ABNB','BKNG','EXPE','MAR','HLT','H','WH',
+    'ENPH','SEDG','FSLR','RUN','NOVA','CSIQ','JKS','DQ','MAXN','ARRY'
 ];
-const LOTTO_STOCKS = [
-    'DINO','CEMI','GEVO','NE','RIG','XOM','CVX','COP','EOG','OXY',
-    'SLB','HAL','BKR','NOV','FTI','WFRD','EXE','DVN','APA','MRO'
+
+// High short interest universe — scanned for Short Squeeze signals
+const SHORT_INTEREST_UNIVERSE = [
+    'GME','AMC','KOSS','CVNA','BYND','UPST','SPCE','MARA','ATER','CLOV',
+    'BBIG','MULN','FFIE','NKLA','WKHS','GOEV','WISH','OPEN','SKLZ','FUBO',
+    'RIDE','REV','APRN','IRNT','BGFV','PROG','BNGO','SENS','SOLO','CTRM',
+    'RDBX','TDUP','SFT','MVST','SDC','BARK','DM','GENI','GREE','ME'
 ];
+
+// Fisher-Yates shuffle — randomize scan order each load
+function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+// Pick random subsets from universes each page load
+let LOTTO_STOCKS     = shuffle(LOTTO_UNIVERSE).slice(0, 50);
+let BULLISH_STOCKS   = shuffle(SCAN_UNIVERSE).slice(0, 40);
+let BEARISH_STOCKS   = shuffle(SCAN_UNIVERSE).slice(0, 40);
+let SHORT_INTEREST_STOCKS = shuffle(SHORT_INTEREST_UNIVERSE).slice(0, 20);
+
+// These are fixed — specific instruments / large-cap dark pool tracking
 const DARK_POOL_STOCKS = ['AAPL','MSFT','GOOGL','AMZN','TSLA','NVDA','META','NFLX'];
-const SHORT_INTEREST_STOCKS = ['GME','AMC','KOSS','CVNA','BYND','UPST','SPCE','MARA','ATER','CLOV'];
 const MARKET_INDICES = ['SPY','QQQ','DIA','IWM','VIXY','TLT'];
 
-const KNOWN_SHORT_INTEREST = {
-    'GME':20,'AMC':18,'KOSS':15,'CVNA':25,'BYND':35,
-    'UPST':28,'SPCE':22,'MARA':19,'ATER':32,'CLOV':12
-};
-const ORIGINAL_2023_PRICES = {
-    'DINO':41.91,'CEMI':32.09,'GEVO':178.66,'NE':52.85,'RIG':79.90,
-    'XOM':95.00,'CVX':150.00,'COP':110.00,'EOG':120.00,'OXY':60.00,
-    'SLB':50.00,'HAL':30.00,'BKR':25.00,'NOV':20.00,'FTI':15.00,
-    'WFRD':50.00,'EXE':80.00,'DVN':60.00,'APA':40.00,'MRO':25.00
-};
+const LOTTO_MIN_PRICE = 0.0001;
+const LOTTO_MAX_PRICE = 5.00;
 
 let scannedStocks = { bullish:[], bearish:[], lotto:[], darkPool:[], shortInterest:[] };
 
@@ -255,17 +297,22 @@ function renderCommodityCards() {
 // SCORING ALGORITHMS (from TypeScript API endpoints)
 // ========================================
 
-// Lotto Score: Proprietary composite
+// Lotto Score: Proprietary composite for penny stocks ($0.0001-$5.00)
 function calculateLottoScore(q) {
     if (!q || !q.price) return 0;
     let s = 0;
     const dp = q.percentChange || 0, p = q.price, r = q.dailyRange || 0;
-    if (dp > 5) s += 30; else if (dp > 2) s += 20; else if (dp > 0) s += 10;
-    if (r > 0.03) s += 25; else if (r > 0.015) s += 15; else if (r > 0.005) s += 10;
-    if (p > 50) s += 25; else if (p > 20) s += 20; else if (p > 10) s += 15; else if (p > 5) s += 10;
-    const a = Math.abs(dp);
-    if (a > 10) s += 20; else if (a > 5) s += 15; else if (a > 2) s += 10;
-    return s;
+    // % move — bigger moves score higher for lotto plays
+    const absDp = Math.abs(dp);
+    if (absDp > 10) s += 30; else if (absDp > 5) s += 22; else if (absDp > 2) s += 15; else if (absDp > 0) s += 5;
+    // Daily range — high volatility is key
+    if (r > 0.05) s += 25; else if (r > 0.03) s += 18; else if (r > 0.015) s += 12; else if (r > 0.005) s += 5;
+    // Price bracket — sub-penny and low penny get highest lotto potential
+    if (p < 0.01) s += 25; else if (p < 0.50) s += 20; else if (p < 1.00) s += 15; else if (p <= 5.00) s += 10;
+    // Relative volume — high rel vol signals unusual activity
+    const rv = q.avgVolume > 0 ? q.volume / q.avgVolume : 1;
+    if (rv > 3) s += 20; else if (rv > 2) s += 15; else if (rv > 1.5) s += 10; else if (rv > 1) s += 5;
+    return Math.min(100, s);
 }
 
 // Bullish Score: Proprietary composite
@@ -385,12 +432,15 @@ function scanBullish() {
     for (const sym of BULLISH_STOCKS) {
         const q = stockCache[sym]?.data;
         if (!q || !q.price) continue;
+        const score = calculateBullishScore(q);
+        // Only include stocks with actual bullish signals (positive momentum + decent score)
+        if (score < 20 || (q.percentChange || 0) < -2) continue;
         r.push({
             symbol: sym, price: q.price, change: q.change, percentChange: q.percentChange,
             volume: q.volume, avgVolume: q.avgVolume,
             relativeVolume: q.avgVolume > 0 ? q.volume / q.avgVolume : 1,
             marketCap: q.marketCap, sharesOutstanding: q.sharesOutstanding,
-            darkPoolPercent: estimateDarkPoolPercent(q), score: calculateBullishScore(q)
+            darkPoolPercent: estimateDarkPoolPercent(q), score
         });
     }
     scannedStocks.bullish = r.sort((a, b) => b.score - a.score || b.percentChange - a.percentChange);
@@ -401,12 +451,15 @@ function scanBearish() {
     for (const sym of BEARISH_STOCKS) {
         const q = stockCache[sym]?.data;
         if (!q || !q.price) continue;
+        const score = calculateBearishScore(q);
+        // Only include stocks with actual bearish signals (negative momentum + decent score)
+        if (score < 20 || (q.percentChange || 0) > 2) continue;
         r.push({
             symbol: sym, price: q.price, change: q.change, percentChange: q.percentChange,
             volume: q.volume, avgVolume: q.avgVolume,
             relativeVolume: q.avgVolume > 0 ? q.volume / q.avgVolume : 1,
             marketCap: q.marketCap, sharesOutstanding: q.sharesOutstanding,
-            darkPoolPercent: estimateDarkPoolPercent(q), score: calculateBearishScore(q)
+            darkPoolPercent: estimateDarkPoolPercent(q), score
         });
     }
     scannedStocks.bearish = r.sort((a, b) => b.score - a.score || a.percentChange - b.percentChange);
@@ -417,8 +470,9 @@ function scanLotto() {
     for (const sym of LOTTO_STOCKS) {
         const q = stockCache[sym]?.data;
         if (!q || !q.price) continue;
+        // Only include stocks in the $0.0001-$5.00 price range
+        if (q.price < LOTTO_MIN_PRICE || q.price > LOTTO_MAX_PRICE) continue;
         const score = calculateLottoScore(q);
-        const orig = ORIGINAL_2023_PRICES[sym] || 0;
         r.push({
             symbol: sym, price: q.price, change: q.change, percentChange: q.percentChange,
             volume: q.volume, avgVolume: q.avgVolume,
@@ -426,7 +480,7 @@ function scanLotto() {
             marketCap: q.marketCap, sharesOutstanding: q.sharesOutstanding,
             darkPoolPercent: estimateDarkPoolPercent(q),
             lottoScore: score, riskLevel: score > 70 ? 'HIGH' : score > 50 ? 'MEDIUM' : 'LOW',
-            perfSince2023: orig > 0 ? ((q.price - orig) / orig * 100) : 0, score
+            score
         });
     }
     scannedStocks.lotto = r.sort((a, b) => b.score - a.score);
@@ -450,17 +504,30 @@ function scanDarkPool() {
     scannedStocks.darkPool = r.sort((a, b) => b.darkPoolPercent - a.darkPoolPercent);
 }
 
+function estimateShortInterest(q) {
+    // Heuristic: high relative volume + negative sentiment + small float → higher SI estimate
+    let si = 10; // baseline
+    const rv = q.avgVolume > 0 ? q.volume / q.avgVolume : 1;
+    if (rv > 3) si += 15; else if (rv > 2) si += 10; else if (rv > 1.5) si += 5;
+    if ((q.percentChange || 0) < -3) si += 8; else if ((q.percentChange || 0) < -1) si += 4;
+    if ((q.percentChange || 0) > 5) si += 6; // squeeze-like move up
+    if ((q.price || 0) < 10) si += 5;
+    if ((q.marketCap || 0) > 0 && q.marketCap < 1e9) si += 8; else if (q.marketCap < 5e9) si += 4;
+    return Math.min(60, si);
+}
+
 function scanShortInterest() {
     const r = [];
     for (const sym of SHORT_INTEREST_STOCKS) {
         const q = stockCache[sym]?.data;
-        if (!q) continue;
+        if (!q || !q.price) continue;
+        const si = estimateShortInterest(q);
         r.push({
             symbol: sym,
-            shortPercent: KNOWN_SHORT_INTEREST[sym] || 15,
+            shortPercent: si,
             percentChange: q.percentChange || 0, volume: q.volume || 0,
             price: q.price || 0, isLotto: (q.price || 0) < 5,
-            source: 'baseline', stale: true
+            source: 'estimate', stale: false
         });
     }
     scannedStocks.shortInterest = r.sort((a, b) => b.shortPercent - a.shortPercent);
@@ -511,23 +578,25 @@ function renderBullishBearishRow(s) {
 }
 
 // Lotto row: 10 cols matching HTML thead
-// Symbol | Last | Net Chng | %Change | Score | Signal | Volume | Rel Vol | Market Cap | Persistence
+// Symbol | Last | Net Chng | %Change | Score | Signal | Volume | Rel Vol | Market Cap | Risk
 function renderLottoRow(s) {
     const pos = s.percentChange >= 0;
     const cls = pos ? 'positive' : 'negative';
     const sign = pos ? '+' : '';
-    const persistence = s.perfSince2023 >= 0 ? `+${s.perfSince2023.toFixed(1)}%` : `${s.perfSince2023.toFixed(1)}%`;
+    const priceStr = s.price < 0.01 ? s.price.toFixed(4) : s.price.toFixed(2);
+    const chgStr = Math.abs(s.change) < 0.01 ? s.change.toFixed(4) : s.change.toFixed(2);
+    const riskCls = s.riskLevel === 'HIGH' ? 'positive' : s.riskLevel === 'MEDIUM' ? 'warning' : '';
     return `<tr>
         <td class="symbol-col">${s.symbol}</td>
-        <td>${s.price.toFixed(2)}</td>
-        <td class="${cls}">${sign}${s.change.toFixed(2)}</td>
+        <td>$${priceStr}</td>
+        <td class="${cls}">${sign}${chgStr}</td>
         <td class="${cls}">${sign}${s.percentChange.toFixed(2)}%</td>
         <td>${s.score}</td>
         <td>${getScoreSignal(s.score)}</td>
         <td>${formatLargeNumber(s.volume)}</td>
         <td>${s.relativeVolume.toFixed(2)}</td>
         <td>${formatLargeNumber(s.marketCap)}</td>
-        <td class="${s.perfSince2023 >= 0 ? 'positive' : 'negative'}">${persistence}</td>
+        <td class="${riskCls}">${s.riskLevel}</td>
     </tr>`;
 }
 
@@ -700,11 +769,11 @@ async function updateSECS3Filings() {
     if (!c) return;
 
     const today = new Date().toISOString().split('T')[0];
-    const startDt = getEdgarDateRange();
-    const edgarUrl = `https://efts.sec.gov/LATEST/search-index?q=%22S-3%22&forms=S-3&dateRange=custom&startdt=${startDt}&enddt=${today}&from=0&size=20`;
+    // Only look at last 14 days for most recent filings
+    const startDt = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const edgarUrl = `https://efts.sec.gov/LATEST/search-index?q=%22S-3%22&forms=S-3,S-3ASR&dateRange=custom&startdt=${startDt}&enddt=${today}&from=0&size=40`;
 
     try {
-        // Try fetching via CORS proxy
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(edgarUrl)}`;
         const resp = await fetch(proxyUrl);
         if (!resp.ok) throw new Error('Proxy returned ' + resp.status);
@@ -712,15 +781,16 @@ async function updateSECS3Filings() {
         const hits = data?.hits?.hits || [];
         if (hits.length === 0) throw new Error('No results');
 
-        // Deduplicate by accession number, extract tickers
-        const seen = new Set();
-        const filings = [];
+        // Deduplicate by CIK (one filing per company, keep most recent)
+        const companyMap = new Map();
         for (const hit of hits) {
-            if (filings.length >= 10) break;
             const src = hit._source || {};
-            const adsh = src.adsh || '';
-            if (seen.has(adsh)) continue;
-            seen.add(adsh);
+            const cik = (src.ciks && src.ciks[0]) || '';
+            if (!cik) continue;
+
+            const filedDate = src.file_date || '';
+            // Skip if we already have a newer filing for this company
+            if (companyMap.has(cik) && companyMap.get(cik).date >= filedDate) continue;
 
             const displayName = (src.display_names && src.display_names[0]) || '';
             let companyName = displayName;
@@ -730,15 +800,17 @@ async function updateSECS3Filings() {
                 ticker = tickerMatch[1];
                 companyName = displayName.split('(')[0].trim();
             }
-            const filedDate = src.file_date || '';
-            const formType = src.form || (src.root_forms && src.root_forms[0]) || 'S-3';
-            const cik = (src.ciks && src.ciks[0]) ? src.ciks[0].replace(/^0+/, '') : '';
-            const url = cik
-                ? `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik}&type=S-3&dateb=&owner=include&count=10`
-                : `https://www.sec.gov/cgi-bin/browse-edgar?company=&CIK=&type=S-3&owner=include&count=40&action=getcurrent`;
+            const formType = src.root_forms?.[0] || src.form || 'S-3';
+            const cleanCik = cik.replace(/^0+/, '');
+            const url = `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cleanCik}&type=S-3&dateb=&owner=include&count=10`;
             const label = ticker ? `${companyName} (${ticker})` : companyName;
-            filings.push({ label, formType, date: filedDate, url });
+            companyMap.set(cik, { label, formType, date: filedDate, url });
         }
+
+        // Sort by date descending (most recent first)
+        const filings = Array.from(companyMap.values())
+            .sort((a, b) => b.date.localeCompare(a.date))
+            .slice(0, 10);
 
         if (filings.length === 0) throw new Error('No filings parsed');
 
@@ -753,23 +825,18 @@ async function updateSECS3Filings() {
                     <a href="${f.url}" target="_blank" rel="noopener" style="color:var(--text-muted);font-size:0.8rem;margin-top:0.3rem;display:inline-block"><i class="fas fa-external-link-alt"></i></a>
                 </div>
             </div>`).join('');
-        console.log(`[DinoTradez] Loaded ${filings.length} S-3 filings`);
+        console.log(`[DinoTradez] Loaded ${filings.length} S-3 filings (most recent first)`);
     } catch (err) {
         console.warn('[DinoTradez] S-3 fetch failed:', err.message, '- showing fallback');
+        const fallbackUrl = `https://efts.sec.gov/LATEST/search-index?q=%22S-3%22&dateRange=custom&startdt=${startDt}&forms=S-3`;
         c.innerHTML = `
             <div style="padding:1rem;text-align:center">
                 <p style="color:#888;margin-bottom:12px">S-3 filings sourced from SEC EDGAR.</p>
-                <a href="${edgarUrl}" target="_blank" rel="noopener" class="btn-link" style="color:#3b82f6;text-decoration:none;font-weight:600">
+                <a href="${fallbackUrl}" target="_blank" rel="noopener" class="btn-link" style="color:#3b82f6;text-decoration:none;font-weight:600">
                     <i class="fas fa-external-link-alt"></i> View Latest S-3 Filings on SEC EDGAR
                 </a>
             </div>`;
     }
-}
-
-function getEdgarDateRange() {
-    const d = new Date();
-    d.setDate(d.getDate() - 90);
-    return d.toISOString().split('T')[0];
 }
 
 // ========================================
