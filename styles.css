@@ -444,6 +444,38 @@ button {
     color: var(--secondary-color);
 }
 
+/* Chart Container */
+.chart-container {
+    margin-top: var(--spacing-xl);
+    background-color: var(--light-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.chart-header-bar {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background-color: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid var(--medium-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chart-header-bar h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.chart-indicators-label {
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
 /* Stock Watchlist */
 .stock-watchlist {
     padding: var(--spacing-xxl) 0;

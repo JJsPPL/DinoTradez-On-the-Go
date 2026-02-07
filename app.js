@@ -403,6 +403,88 @@
     }
 
     // =========================================================================
+    // SEC EDGAR S-3 FILINGS
+    // =========================================================================
+    function loadS3Filings() {
+        var container = document.getElementById('edgar-filings');
+        if (!container) return;
+
+        var today = new Date().toISOString().split('T')[0];
+        var threeMonthsAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+            .toISOString().split('T')[0];
+
+        var url = 'https://efts.sec.gov/LATEST/search-index' +
+            '?q=%22S-3%22&forms=S-3&dateRange=custom' +
+            '&startdt=' + threeMonthsAgo +
+            '&enddt=' + today +
+            '&from=0&size=20';
+
+        logMessage('Fetching S-3 filings from SEC EDGAR...');
+
+        fetch(url, {
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            var hits = (data.hits && data.hits.hits) || [];
+            if (hits.length === 0) {
+                container.innerHTML = '<div class="filing-item" style="justify-content: center;"><span style="color: var(--secondary-color);">No recent S-3 filings found</span></div>';
+                return;
+            }
+
+            // Deduplicate by accession number
+            var seen = {};
+            var filings = [];
+            for (var i = 0; i < hits.length && filings.length < 10; i++) {
+                var src = hits[i]._source || {};
+                var adsh = src.adsh || '';
+                if (seen[adsh]) continue;
+                seen[adsh] = true;
+
+                var displayName = (src.display_names && src.display_names[0]) || '';
+                var companyName = displayName;
+                var ticker = null;
+
+                var tickerMatch = displayName.match(/\(([A-Z]{1,5})\)/);
+                if (tickerMatch) {
+                    ticker = tickerMatch[1];
+                    companyName = displayName.split('(')[0].trim();
+                }
+
+                var filedDate = src.file_date || '';
+                var formType = src.form || (src.root_forms && src.root_forms[0]) || 'S-3';
+                var cik = (src.ciks && src.ciks[0]) ? src.ciks[0].replace(/^0+/, '') : '';
+
+                var filingUrl = cik
+                    ? 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=' + cik + '&type=S-3&dateb=&owner=include&count=10'
+                    : 'https://www.sec.gov/cgi-bin/browse-edgar?company=&CIK=&type=S-3&owner=include&count=40&action=getcurrent';
+
+                var label = ticker ? companyName + ' (' + ticker + ')' : companyName;
+                filings.push({ label: label, formType: formType, date: filedDate, url: filingUrl });
+            }
+
+            var html = '';
+            for (var j = 0; j < filings.length; j++) {
+                var f = filings[j];
+                html += '<div class="filing-item">' +
+                    '<div class="filing-company">' + f.label + '</div>' +
+                    '<div class="filing-details">' +
+                    '<div class="filing-type">' + f.formType + '</div>' +
+                    '<div class="filing-date">' + f.date + '</div>' +
+                    '</div>' +
+                    '<a href="' + f.url + '" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>' +
+                    '</div>';
+            }
+            container.innerHTML = html;
+            logMessage('Loaded ' + filings.length + ' S-3 filings');
+        })
+        .catch(function (err) {
+            logMessage('Error fetching S-3 filings: ' + err.message);
+            container.innerHTML = '<div class="filing-item" style="justify-content: center;"><span style="color: var(--danger-color);">Failed to load filings. <a href="https://www.sec.gov/cgi-bin/browse-edgar?company=&CIK=&type=S-3&owner=include&count=40&action=getcurrent" target="_blank" style="color: var(--primary-color);">View on SEC.gov</a></span></div>';
+        });
+    }
+
+    // =========================================================================
     // TOAST MESSAGES
     // =========================================================================
     function showToast(message, type) {
@@ -433,6 +515,9 @@
 
         // Load live market data
         loadMarketOverview();
+
+        // Load S-3 filings from SEC EDGAR
+        loadS3Filings();
 
         // Periodic refresh
         setInterval(function () {

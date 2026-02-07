@@ -143,6 +143,15 @@
                 </div>
             </div>
             <div class="last-updated" id="market-last-updated"></div>
+
+            <!-- TradingView Chart -->
+            <div class="chart-container">
+                <div class="chart-header-bar">
+                    <h3><i class="fas fa-chart-line"></i> Live Chart</h3>
+                    <span class="chart-indicators-label">200 HMA &bull; MACD (12, 26, 9)</span>
+                </div>
+                <div id="tradingview_chart" style="height: 500px;"></div>
+            </div>
         </div>
     </section>
 
@@ -328,46 +337,9 @@
                         <h3><i class="fas fa-file-contract"></i> Latest S-3 Offerings</h3>
                         <span class="data-source">Source: SEC Edgar</span>
                     </div>
-                    <div class="edgar-filings">
-                        <div class="filing-item">
-                            <div class="filing-company">Palantir Technologies Inc (PLTR)</div>
-                            <div class="filing-details">
-                                <div class="filing-type">S-3ASR</div>
-                                <div class="filing-date">2025-04-10</div>
-                            </div>
-                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=palantir&CIK=&type=S-3&dateb=&owner=include&count=10&search_text=&action=getcompany" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
-                        </div>
-                        <div class="filing-item">
-                            <div class="filing-company">SoFi Technologies, Inc. (SOFI)</div>
-                            <div class="filing-details">
-                                <div class="filing-type">S-3</div>
-                                <div class="filing-date">2025-04-09</div>
-                            </div>
-                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=sofi&CIK=&type=S-3&dateb=&owner=include&count=10&search_text=&action=getcompany" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
-                        </div>
-                        <div class="filing-item">
-                            <div class="filing-company">Lucid Group, Inc. (LCID)</div>
-                            <div class="filing-details">
-                                <div class="filing-type">S-3ASR</div>
-                                <div class="filing-date">2025-04-08</div>
-                            </div>
-                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=lucid&CIK=&type=S-3&dateb=&owner=include&count=10&search_text=&action=getcompany" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
-                        </div>
-                        <div class="filing-item">
-                            <div class="filing-company">Rivian Automotive, Inc. (RIVN)</div>
-                            <div class="filing-details">
-                                <div class="filing-type">S-3</div>
-                                <div class="filing-date">2025-04-07</div>
-                            </div>
-                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=rivian&CIK=&type=S-3&dateb=&owner=include&count=10&search_text=&action=getcompany" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
-                        </div>
-                        <div class="filing-item">
-                            <div class="filing-company">Beyond Meat, Inc. (BYND)</div>
-                            <div class="filing-details">
-                                <div class="filing-type">S-3</div>
-                                <div class="filing-date">2025-04-05</div>
-                            </div>
-                            <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=beyond+meat&CIK=&type=S-3&dateb=&owner=include&count=10&search_text=&action=getcompany" class="filing-link" target="_blank"><i class="fas fa-external-link-alt"></i></a>
+                    <div class="edgar-filings" id="edgar-filings">
+                        <div class="filing-item" style="justify-content: center;">
+                            <span style="color: var(--secondary-color);"><i class="fas fa-spinner fa-spin"></i> Loading S-3 filings from SEC EDGAR...</span>
                         </div>
                     </div>
                     <div class="card-footer">
@@ -735,10 +707,35 @@
                 <p>Disclaimer: Trading financial instruments involves substantial risk and may not be suitable for all investors. Past performance is not indicative of future results. This website is provided for informational, educational and most importantly entertainment purposes only and should not be considered investment advice. Always conduct your own research before making any financial decisions. DinoTradez is not liable for your actions.</p>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 DinoTradez. All rights reserved.</p>
+                <p>&copy; 2026 DinoTradez. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <!-- TradingView Chart Widget -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript">
+        new TradingView.widget({
+            "autosize": true,
+            "symbol": "USFD",
+            "interval": "D",
+            "timezone": "America/New_York",
+            "theme": "dark",
+            "style": "1",
+            "locale": "en",
+            "toolbar_bg": "#1a1d21",
+            "enable_publishing": false,
+            "allow_symbol_change": true,
+            "container_id": "tradingview_chart",
+            "studies": [
+                "HullMA@tv-basicstudies",
+                "MACD@tv-basicstudies"
+            ],
+            "studies_overrides": {
+                "hull moving average.length": 200
+            }
+        });
+    </script>
 
     <!-- Scripts (no ES modules for GitHub Pages compatibility) -->
     <script src="config.js"></script>
