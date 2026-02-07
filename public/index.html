@@ -180,7 +180,7 @@
     <div class="container">
         <div class="section-head">
             <h2><i class="fas fa-chart-bar"></i> DinoChart</h2>
-            <p>Interactive chart with MACD &amp; CDV MACD indicators &mdash; powered by TradingView</p>
+            <p>Interactive chart with 200 HMA &amp; MACD indicators &mdash; powered by TradingView</p>
         </div>
         <div class="tradingview-widget-container" style="height:660px; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.08);">
             <div id="tradingview_dinochart" style="height:100%; width:100%;"></div>
@@ -188,7 +188,7 @@
             <script type="text/javascript">
                 new TradingView.widget({
                     "autosize": true,
-                    "symbol": "NASDAQ:AAPL",
+                    "symbol": "USFD",
                     "interval": "D",
                     "timezone": "America/New_York",
                     "theme": "dark",
@@ -202,8 +202,12 @@
                     "hide_side_toolbar": false,
                     "withdateranges": true,
                     "studies": [
+                        "STD;Hull%1Moving%1Average",
                         "STD;MACD"
                     ],
+                    "studies_overrides": {
+                        "Hull Moving Average.length": 200
+                    },
                     "container_id": "tradingview_dinochart",
                     "support_host": "https://www.tradingview.com"
                 });

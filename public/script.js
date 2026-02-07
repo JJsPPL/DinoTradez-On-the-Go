@@ -695,21 +695,80 @@ function initializeMarketIntelligence() {
     updateSECS3Filings();
 }
 
-function updateSECS3Filings() {
+async function updateSECS3Filings() {
     const c = document.querySelector('#s3-filings');
     if (!c) return;
-    c.innerHTML = `
-        <div style="padding:1rem;text-align:center">
-            <p style="color:#888;margin-bottom:12px">S-3 filings are sourced from SEC EDGAR. Due to CORS restrictions, direct browser access is limited.</p>
-            <a href="https://efts.sec.gov/LATEST/search-index?q=%22S-3%22&dateRange=custom&startdt=${getEdgarDateRange()}&forms=S-3" target="_blank" rel="noopener" class="btn-link" style="color:#3b82f6;text-decoration:none;font-weight:600">
-                <i class="fas fa-external-link-alt"></i> View Latest S-3 Filings on SEC EDGAR
-            </a>
-        </div>`;
+
+    const today = new Date().toISOString().split('T')[0];
+    const startDt = getEdgarDateRange();
+    const edgarUrl = `https://efts.sec.gov/LATEST/search-index?q=%22S-3%22&forms=S-3&dateRange=custom&startdt=${startDt}&enddt=${today}&from=0&size=20`;
+
+    try {
+        // Try fetching via CORS proxy
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(edgarUrl)}`;
+        const resp = await fetch(proxyUrl);
+        if (!resp.ok) throw new Error('Proxy returned ' + resp.status);
+        const data = await resp.json();
+        const hits = data?.hits?.hits || [];
+        if (hits.length === 0) throw new Error('No results');
+
+        // Deduplicate by accession number, extract tickers
+        const seen = new Set();
+        const filings = [];
+        for (const hit of hits) {
+            if (filings.length >= 10) break;
+            const src = hit._source || {};
+            const adsh = src.adsh || '';
+            if (seen.has(adsh)) continue;
+            seen.add(adsh);
+
+            const displayName = (src.display_names && src.display_names[0]) || '';
+            let companyName = displayName;
+            let ticker = null;
+            const tickerMatch = displayName.match(/\(([A-Z]{1,5})\)/);
+            if (tickerMatch) {
+                ticker = tickerMatch[1];
+                companyName = displayName.split('(')[0].trim();
+            }
+            const filedDate = src.file_date || '';
+            const formType = src.form || (src.root_forms && src.root_forms[0]) || 'S-3';
+            const cik = (src.ciks && src.ciks[0]) ? src.ciks[0].replace(/^0+/, '') : '';
+            const url = cik
+                ? `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik}&type=S-3&dateb=&owner=include&count=10`
+                : `https://www.sec.gov/cgi-bin/browse-edgar?company=&CIK=&type=S-3&owner=include&count=40&action=getcurrent`;
+            const label = ticker ? `${companyName} (${ticker})` : companyName;
+            filings.push({ label, formType, date: filedDate, url });
+        }
+
+        if (filings.length === 0) throw new Error('No filings parsed');
+
+        c.innerHTML = filings.map(f => `
+            <div class="intel-item">
+                <div class="intel-item-left">
+                    <div class="intel-item-sym">${f.label}</div>
+                    <div class="intel-item-date">${f.date}</div>
+                </div>
+                <div class="intel-item-right">
+                    <div class="intel-item-type">${f.formType}</div>
+                    <a href="${f.url}" target="_blank" rel="noopener" style="color:var(--text-muted);font-size:0.8rem;margin-top:0.3rem;display:inline-block"><i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>`).join('');
+        console.log(`[DinoTradez] Loaded ${filings.length} S-3 filings`);
+    } catch (err) {
+        console.warn('[DinoTradez] S-3 fetch failed:', err.message, '- showing fallback');
+        c.innerHTML = `
+            <div style="padding:1rem;text-align:center">
+                <p style="color:#888;margin-bottom:12px">S-3 filings sourced from SEC EDGAR.</p>
+                <a href="${edgarUrl}" target="_blank" rel="noopener" class="btn-link" style="color:#3b82f6;text-decoration:none;font-weight:600">
+                    <i class="fas fa-external-link-alt"></i> View Latest S-3 Filings on SEC EDGAR
+                </a>
+            </div>`;
+    }
 }
 
 function getEdgarDateRange() {
     const d = new Date();
-    d.setDate(d.getDate() - 30);
+    d.setDate(d.getDate() - 90);
     return d.toISOString().split('T')[0];
 }
 
